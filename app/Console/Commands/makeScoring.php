@@ -2,7 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Services\MunicipalityInformations;
+use App\Services\Geographic\Scrapper\GetNearbyMunicipalities;
+use App\Services\Geographic\Scrapper\GetPopulation;
 use Illuminate\Console\Command;
 
 class makeScoring extends Command
@@ -26,11 +27,12 @@ class makeScoring extends Command
      */
     public function handle()
     {
-        $this->info('START');
-        $finder = new MunicipalityInformations();
-
-        $communes = $finder->getNearbyMunicipalities(47.39532, 0.74771, 5);
-
-        $this->info($communes);
+        //$this->info('NEARBY POP');
+        //$nearbyMunicipalities = new GetNearbyMunicipalities(47.39532, 0.74771, 2);
+        //$municipalities = $nearbyMunicipalities()->getOriginalContent();
+        
+        $this->info('POPULATION');
+        $population = new GetPopulation();
+        $popData = $population("37261");
     }
 }
