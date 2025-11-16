@@ -7,29 +7,16 @@ use Illuminate\Support\Facades\Http;
 
 class GetNearbyFarms
 {
-    public float $lat;
-    public float $lon;
-    public int $radius_km;
+    public array $code_insee;
 
-    public function __construct(float $lat, float $lon, int $radius_km = 15)
+    public function __construct(array $code_insee)
     {
-        $this->lat = $lat;
-        $this->lon = $lon;
-        $this->radius_km = $radius_km;
+        $this->code_insee = $code_insee;
     }
 
     public function __invoke():JsonResponse
     {
-        $base_url = 'https://annuaire-back.agencebio.org/operateurs';
-        $payload = [
-            "typesProfessionnels" => "ferme",
-            "activities" => 18,
-            "dist" => $this->radius_km,
-            "lng" => $this->lon,
-            "lat" => $this->lat
-        ];
-
-        $response = Http::get($base_url, $payload);
+        $response = Http::get('https://tabular-api.data.gouv.fr/api/resources/75d07d6b-a31d-4ac0-9f1f-7faaa3ecb162/data/?geocode_commune__in='.implode(',', $this->code_insee));
 
         if ($response->successful()) {
             $data = $response->json();
@@ -37,5 +24,5 @@ class GetNearbyFarms
         } else {
             return response()->json(['error' => 'Unable to fetch data'], $response->status());
         }
-    }
+    } 
 }

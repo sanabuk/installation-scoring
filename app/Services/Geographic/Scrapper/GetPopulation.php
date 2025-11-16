@@ -18,6 +18,7 @@ class GetPopulation
          * - codePostaux[]
          * - population
          * Pour le moment seule la donnée a un intérêt
+         * Documentation : https://geo.api.gouv.fr/decoupage-administratif/communes
          */
         $response = Http::get('https://geo.api.gouv.fr/communes/'.$code_insee);
 
