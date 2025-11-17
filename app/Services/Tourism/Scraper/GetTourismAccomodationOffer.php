@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services\Tourism\Scrapper;
+namespace App\Services\Tourism\Scraper;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;

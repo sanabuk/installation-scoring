@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services\Finance\Scrapper;
+namespace App\Services\Finance\Scraper;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;

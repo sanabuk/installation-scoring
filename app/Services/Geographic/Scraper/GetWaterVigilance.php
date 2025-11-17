@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services\Geographic\Scrapper;
+namespace App\Services\Geographic\Scraper;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\JsonResponse;

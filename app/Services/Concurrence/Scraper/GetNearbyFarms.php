@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services\Concurrence\Scrapper;
+namespace App\Services\Concurrence\Scraper;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http; 

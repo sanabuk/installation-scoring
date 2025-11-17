@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Geographic\Scrapper\GetNearbyMunicipalities;
-use App\Services\Geographic\Scrapper\GetPopulation;
+use App\Services\Geographic\Scraper\GetNearbyMunicipalities;
+use App\Services\Geographic\Scraper\GetPopulation;
 use Illuminate\Console\Command;
 
 class makeScoring extends Command
