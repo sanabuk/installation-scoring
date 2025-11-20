@@ -20,7 +20,7 @@ class GetNearbyFarms
 
         if ($response->successful()) {
             $data = $response->json();
-            return $data;
+            return response()->json($data);
         } else {
             return response()->json(['error' => 'Unable to fetch data'], $response->status());
         }

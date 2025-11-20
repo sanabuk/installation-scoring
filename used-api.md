@@ -183,3 +183,6 @@ def get_insee_population(code_insee):
   - Unnamed: 12 => Retraites et pensions / Montant
 * Doc api : https://tabular-api.data.gouv.fr/api/resources/1859baa1-873c-4ffb-8f92-953c2b2eae2b/swagger/
 
+# Recherche taxe de séjour
+
+https://data.ofgl.fr/api/records/1.0/search/?rows=40&sort=exer&refine.agregat=Autres+imp%C3%B4ts+et+taxes&refine.exer=2024&refine.com_name=Tours&start=0&fields=exer,com_name,lbudg,type_de_budget,agregat,montant,ptot,euros_par_habitant&dataset=ofgl-base-communes&timezone=Europe%2FBerlin&lang=fr
