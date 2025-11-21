@@ -4,6 +4,7 @@ namespace App\Services\ScoringHandler;
 
 use App\Services\Concurrence\Scraper\GetNearbyOrganicVegetableFarms;
 use App\Services\Concurrence\Service\NearbyFarmService;
+use App\Services\Concurrence\Service\NearbyOrganicVegetableFarmService;
 use App\Services\Geographic\Scraper\GetNearbyMunicipalities;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -20,20 +21,23 @@ class ScoringHandler
 
     public function handler()
     {
-        // $recap = [];
-        // $scrapNearbyMunicipalities = new GetNearbyMunicipalities($this->lat, $this->lon, 2);
-        // $nearbyMunicipalities = $scrapNearbyMunicipalities();
-        // dump($nearbyMunicipalities);
-        // $recap = $this->getNearbyMunicipalities($nearbyMunicipalities, $recap);
-        // dump($recap);
+        $recap = [];
+        $scrapNearbyMunicipalities = new GetNearbyMunicipalities($this->lat, $this->lon, 15);
+        $nearbyMunicipalities = $scrapNearbyMunicipalities();
+        $recap = $this->getNearbyMunicipalities($nearbyMunicipalities, $recap);
+        dump($recap);
 
         // $scrapNearbyOrganicFarms = new GetNearbyOrganicVegetableFarms($this->lat, $this->lon, 2); 
         // $nearbyOrganicVegetableFarms = $scrapNearbyOrganicFarms();
         // $globalOragnicVegetablesFarms = json_decode($nearbyOrganicVegetableFarms->getContent());
         // dump($globalOragnicVegetablesFarms->nbTotal);
-        $nearbyFarmService = new NearbyFarmService();
-        $nearbyFarms = $nearbyFarmService->getNearbyFarms(['37261']);
-        dump($nearbyFarms);
+        // $nearbyFarmService = new NearbyFarmService();
+        // $nearbyFarms = $nearbyFarmService->getNearbyFarms(['37261']);
+        // dump($nearbyFarms);
+
+        $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
+        $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
+        dump($nearbyOrganicVegetableFarms);
     }
 
     private function getNearbyMunicipalities(JsonResponse $nearbyMunicipalities, array $recap):array

@@ -7,7 +7,7 @@ class NearbyFarmDTO
     protected int $quantity;
     protected int $year;
     protected string $code_insee;
-    protected string $name;
+    protected string $municipality_name;
 
     public function getQuantity()
     {
@@ -39,13 +39,13 @@ class NearbyFarmDTO
         $this->year = $year;
     }
 
-    public function getName()
+    public function getMunicipalityName()
     {
-        return $this->name;
+        return $this->municipality_name;
     }
 
-    public function setName(string $name)
+    public function setMunicipalityName(string $name)
     {
-        $this->name = $name;
+        $this->municipality_name = $name;
     }
 }

@@ -22,11 +22,17 @@ class GetNearbyOrganicVegetableFarms
     {
         $base_url = 'https://annuaire-back.agencebio.org/operateurs';
         $payload = [
-            "typesProfessionnels" => "ferme",
+            "userPage" => 1,
             "activities" => 18,
+            "rand" => 865,
+            "page" => 1,
+            "profils" => "Ferme",
+            "typesProfessionnels" => "ferme",
+            "sortBy" => "distance",
             "dist" => $this->radius_km,
+            "lat" => $this->lat,
             "lng" => $this->lon,
-            "lat" => $this->lat
+            "nb" => 200          
         ];
 
         $response = Http::get($base_url, $payload);

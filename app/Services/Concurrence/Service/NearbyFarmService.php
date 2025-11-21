@@ -8,7 +8,7 @@ use stdClass;
 
 class NearbyFarmService
 {
-    public function getNearbyFarms(array $codes_insee)
+    public function getNearbyFarms(array $codes_insee): array
     {
         $getNearbyFarmsFromApi = new GetNearbyFarms($codes_insee);
         $rawDatas = $getNearbyFarmsFromApi();
@@ -17,12 +17,12 @@ class NearbyFarmService
         );
     }
 
-    private function mapToNearbyFarmDTO(stdClass $rawData)
+    private function mapToNearbyFarmDTO(stdClass $rawData):NearbyFarmDTO
     {
         $nearbyFarmDTO = new NearbyFarmDTO;
         $nearbyFarmDTO->setCodeInsee($rawData->geocode_commune);
         $nearbyFarmDTO->setQuantity($rawData->valeur);
-        $nearbyFarmDTO->setName($rawData->libelle_commune);
+        $nearbyFarmDTO->setMunicipalityName($rawData->libelle_commune);
         $nearbyFarmDTO->setYear(intval(substr($rawData->date_mesure,0,4)));
         return $nearbyFarmDTO;
     }
