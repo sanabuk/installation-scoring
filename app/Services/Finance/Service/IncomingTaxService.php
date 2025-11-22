@@ -11,8 +11,6 @@ class IncomingTaxService
     {
         $getIncomingTaxFromApi = new GetIncomingTax($code_insee);
         $rawDatas = $getIncomingTaxFromApi();
-        dump($rawDatas);
-
         return array_map(
             fn($rawData) => $this->mapToIncomingTaxDTO($rawData), $rawDatas
         );
@@ -29,7 +27,6 @@ class IncomingTaxService
         $incomingTaxDTO->setAmountBySalary($rawData['Unnamed: 10']);
         $incomingTaxDTO->setNumberOfHouseholdsTaxedOnPension($rawData['Unnamed: 11']);
         $incomingTaxDTO->setAmountByPension($rawData['Unnamed: 12']);
-        dump($incomingTaxDTO);
         return $incomingTaxDTO;
     }
 }
