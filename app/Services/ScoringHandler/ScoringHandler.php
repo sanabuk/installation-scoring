@@ -27,17 +27,17 @@ class ScoringHandler
         $recap = $this->getNearbyMunicipalities($nearbyMunicipalities, $recap);
         dump($recap);
 
-        // $scrapNearbyOrganicFarms = new GetNearbyOrganicVegetableFarms($this->lat, $this->lon, 2); 
-        // $nearbyOrganicVegetableFarms = $scrapNearbyOrganicFarms();
-        // $globalOragnicVegetablesFarms = json_decode($nearbyOrganicVegetableFarms->getContent());
-        // dump($globalOragnicVegetablesFarms->nbTotal);
-        // $nearbyFarmService = new NearbyFarmService();
-        // $nearbyFarms = $nearbyFarmService->getNearbyFarms(['37261']);
-        // dump($nearbyFarms);
+        $codes_insee_array = $this->getAllCodeInsee($recap);
+
+        $nearbyFarmService = new NearbyFarmService();
+        $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
+        dump($nearbyFarms);
 
         $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
         $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
         dump($nearbyOrganicVegetableFarms);
+
+        
     }
 
     private function getNearbyMunicipalities(JsonResponse $nearbyMunicipalities, array $recap):array
@@ -47,5 +47,14 @@ class ScoringHandler
             $recap[$municipality->name]['code_insee'] = $municipality->code_insee;
         }
         return $recap;
+    }
+
+    private function getAllCodeInsee($recap):array
+    {
+        $codes_insee = [];
+        foreach ($recap as $cityInfo) {
+            $codes_insee[] = $cityInfo['code_insee'];
+        }
+        return $codes_insee;
     }
 }
