@@ -18,12 +18,12 @@ class GetNearbyCitiesByDuration
         $this->duration = $duration*60;
     }
 
-    public function __invoke():JsonResponse
+    public function __invoke():array
     {
         return $this->getIsochrone();
     }
 
-    private function getIsochrone():JsonResponse
+    private function getIsochrone():array
     {
         $url = 'https://api.openrouteservice.org/v2/isochrones/driving-car';
         $response = Http::withHeaders([
@@ -35,13 +35,16 @@ class GetNearbyCitiesByDuration
         $isochroneData = json_decode($response, true);
         $polygon = $isochroneData['features'][0]['geometry']['coordinates'][0];
 
-        $polygonString = '';
-        foreach ($polygon as $coord) {
-            $polygonString .= $coord[1].' '.$coord[0].' ';
-        }
-        $polygonString = rtrim($polygonString);
+        list($first_polygon, $second_polygon) = $this->splitIsochrone($polygon);
 
-        return $this->getRestaurantsFromIsochrone($polygonString);
+        $cities_from_first_polygon = $this->getCitiesFromIsochrone($first_polygon);
+        $cities_from_second_polygon = $this->getCitiesFromIsochrone($second_polygon);
+
+        $cities = array_merge($cities_from_first_polygon->getOriginalContent(), $cities_from_second_polygon->getOriginalContent());
+        //dump($cities);
+        $cities_unique = array_values(array_unique($cities,SORT_REGULAR));
+        //dump($cities_unique);
+        return $cities_unique;
     }
 
     private function getCitiesFromIsochrone(string $polygonString):JsonResponse
@@ -70,6 +73,7 @@ class GetNearbyCitiesByDuration
                     $communes[] = [
                         'name' => $element['tags']['name'],
                         'code_insee' => $element['tags']['ref:INSEE'],
+                        'code_postal' => $element['tags']['postal_code'],
                         'population' => $element['tags']['population']
                     ];
                 }
@@ -111,5 +115,27 @@ class GetNearbyCitiesByDuration
         } else {
             return response()->json(['error' => 'Unable to fetch data'], $response->status());
         }
+    }
+
+    private function splitIsochrone(array $isochrone):array
+    {
+        $isochrone_length = count($isochrone);
+        $isochrone_split_key = floor($isochrone_length/2);
+        $first_polygon = $isochrone[0];
+
+        $polygon_first_string = '';
+        for ($i=0; $i < $isochrone_split_key; $i++) { 
+            $polygon_first_string .= $isochrone[$i][1].' '.$isochrone[$i][0].' ';
+        }
+        $polygon_first_string .= $first_polygon[1].' '. $first_polygon[0];
+        $polygon_first_string = rtrim($polygon_first_string);
+
+        $polygon_second_string = '';
+        for ($i=$isochrone_split_key; $i < $isochrone_length; $i++) { 
+            $polygon_second_string .= $isochrone[$i][1].' '.$isochrone[$i][0].' ';
+        }
+        $polygon_second_string .= $isochrone[$isochrone_split_key][1].' '. $isochrone[$isochrone_split_key][0];
+
+        return [$polygon_first_string, $polygon_second_string];
     }
 }

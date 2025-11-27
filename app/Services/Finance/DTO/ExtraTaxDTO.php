@@ -6,6 +6,7 @@ class ExtraTaxDTO
 {
     protected float $euros_per_resident;
     protected string $city;
+    protected string $code_insee;
 
     public function getEurosPerResident()
     {
@@ -25,5 +26,15 @@ class ExtraTaxDTO
     public function setCity($city)
     {
         $this->city = $city;
+    }
+
+    public function getCodeInsee()
+    {
+        return $this->code_insee;
+    }
+
+    public function setCodeInsee($code_insee)
+    {
+        $this->code_insee = $code_insee;
     }
 }

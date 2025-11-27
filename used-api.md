@@ -32,6 +32,10 @@ Doc tabular-api : https://www.data.gouv.fr/dataservices/api-tabulaire-data-gouv-
 Pas d'API disponible. Possibilité de scrapper un site répertoire 
 * https://www.avenir-bio.fr/annuaire_amap.php
 
+# Recherche des marchés
+Pas d'API disponible. Possible de scrapper un site répertoire
+* https://www.jours-de-marche.fr
+
 # Recherche sur les sols
 
 # Recherche sur les alertes vigilances eaux (restrictions)
@@ -185,4 +189,4 @@ def get_insee_population(code_insee):
 
 # Recherche taxe de séjour
 
-https://data.ofgl.fr/api/records/1.0/search/?rows=40&sort=exer&refine.agregat=Autres+imp%C3%B4ts+et+taxes&refine.exer=2024&refine.com_name=Tours&start=0&fields=exer,com_name,lbudg,type_de_budget,agregat,montant,ptot,euros_par_habitant&dataset=ofgl-base-communes&timezone=Europe%2FBerlin&lang=fr
+DOC (explorateur) : https://data.ofgl.fr/explore/dataset/ofgl-base-communes-consolidee/api/?disjunctive.agregat&disjunctive.reg_name&disjunctive.dep_name&disjunctive.epci_name&disjunctive.com_name&disjunctive.tranche_population&disjunctive.tranche_revenu_imposable_par_habitant&sort=exer&refine.exer=2024&refine.agregat=Autres+imp%C3%B4ts+et+taxes
