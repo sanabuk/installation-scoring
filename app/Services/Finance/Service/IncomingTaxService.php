@@ -11,9 +11,7 @@ class IncomingTaxService
     {
         $getIncomingTaxFromApi = new GetIncomingTax($code_insee);
         $rawDatas = $getIncomingTaxFromApi();
-        return array_map(
-            fn($rawData) => $this->mapToIncomingTaxDTO($rawData), $rawDatas
-        );
+        return $this->mapToIncomingTaxDTO($rawDatas);
     }
 
     private function mapToIncomingTaxDTO($rawData)

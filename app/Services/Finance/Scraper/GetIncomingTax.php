@@ -24,7 +24,7 @@ class GetIncomingTax
         if ($response->successful()) {
             $data = $response->json();
             $data['data'][0]['codeinsee'] = $this->code_insee;
-            return $data['data'];
+            return $data['data'][0];
         } else {
             return response()->json(['error' => 'Unable to fetch data'], $response->status());
         }

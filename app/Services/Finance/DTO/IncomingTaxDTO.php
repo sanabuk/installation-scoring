@@ -2,7 +2,7 @@
 
 namespace App\Services\Finance\DTO;
 
-class IncomingTaxDTO
+class IncomingTaxDTO implements \JsonSerializable
 {
     protected string $code_insee;
     protected string $municipality;
@@ -12,6 +12,20 @@ class IncomingTaxDTO
     protected float $amount_by_salary;
     protected int $number_of_households_taxed_on_pension;
     protected float $amount_by_pension;
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'code_insee' => $this->code_insee,
+            'municipality' => $this->municipality,
+            'number_of_taxable_households' => $this->number_of_taxable_households,
+            'number_of_taxed_households' => $this->number_of_taxed_households,
+            'number_of_households_taxed_on_salary' => $this->number_of_households_taxed_on_salary,
+            'amount_by_salary' => $this->amount_by_salary,
+            'number_of_households_taxed_on_pension' => $this->number_of_households_taxed_on_pension,
+            'amount_by_pension' => $this->amount_by_pension,
+        ];
+    }
 
     public function getCodeInsee()
     {

@@ -8,6 +8,8 @@ use App\Services\Concurrence\Service\NearbyOrganicVegetableFarmService;
 use App\Services\Finance\Service\ExtraTaxService;
 use App\Services\Finance\Service\IncomingTaxService;
 use App\Services\Geographic\Scraper\GetNearbyCitiesByDuration;
+use App\Services\Tools\ArrayHydrator;
+use App\Services\Tools\GetIsochroneByDuration;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ScoringHandler
@@ -23,32 +25,45 @@ class ScoringHandler
 
     public function handler()
     {
-        $recap = [];
-        $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($this->lat, $this->lon, 15);
-        $nearbyMunicipalities = $scrapNearbyCitiesByDuration();
-        dump($nearbyMunicipalities);
+        $polygonIsochroneService = new GetIsochroneByDuration($this->lat, $this->lon, 15);
+        $isochrone = $polygonIsochroneService->getIsochrone();
+        $split_isochrones = $polygonIsochroneService->splitIsochrone($isochrone);
+
+        $_cities = [];
+        foreach ($split_isochrones as $polygon_string) {
+            $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string);
+            $_cities[] = $scrapNearbyCitiesByDuration();
+        }
+        $nearbyMunicipalities = array_values(array_unique(array_merge($_cities[0], $_cities[1]), SORT_REGULAR));
+        //dump($nearbyMunicipalities);
 
         $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
-        dump($codes_insee_array);
+        //dump($codes_insee_array);
 
         $nearbyFarmService = new NearbyFarmService();
         $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
-        dump($nearbyFarms);
+        //dump($nearbyFarms);
 
-        $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
-        $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
-        dump($nearbyOrganicVegetableFarms);
+        $hydrator = new ArrayHydrator();
+        $_results = $hydrator->hydrate($nearbyMunicipalities, $nearbyFarms, 'code_insee', ['code_insee','municipality_name','year']);
+
+        // $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
+        // $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
+        // dump($nearbyOrganicVegetableFarms);
 
         $extraTaxService = new ExtraTaxService();
         $extraTaxInfo = $extraTaxService->getExtraTax($codes_insee_array);
-        dump($extraTaxInfo);
 
+        $_results_with_extra_tax = $hydrator->hydrate($_results, $extraTaxInfo, 'code_insee', ['code_insee','city']);
+        //dump($_results_with_extra_tax);
+
+        $incomingTaxInfos = [];
         foreach ($codes_insee_array as $code_insee) {
             $incomingTaxService = new IncomingTaxService();
-            $incomingTaxInfo = $incomingTaxService->getIncomingTax($code_insee);
-            dump($incomingTaxInfo);
+            $incomingTaxInfos[] = $incomingTaxService->getIncomingTax($code_insee);
         }
-        
+        $results = $hydrator->hydrate($_results_with_extra_tax, $incomingTaxInfos, 'code_insee', ['code_insee','municipality']);
+        dump($results);
     }
 
     private function getAllCodeInsee($recap):array

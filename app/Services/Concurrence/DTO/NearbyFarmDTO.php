@@ -2,12 +2,22 @@
 
 namespace App\Services\Concurrence\DTO;
 
-class NearbyFarmDTO
+class NearbyFarmDTO implements \JsonSerializable
 {
     protected int $quantity;
     protected int $year;
     protected string $code_insee;
     protected string $municipality_name;
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'quantity_farm_in_'.$this->year => $this->quantity,
+            'code_insee' => $this->code_insee,
+            'year' => $this->year,
+            'municipality_name' => $this->municipality_name,
+        ];
+    }
 
     public function getQuantity()
     {

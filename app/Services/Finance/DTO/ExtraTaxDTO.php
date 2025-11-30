@@ -2,11 +2,20 @@
 
 namespace App\Services\Finance\DTO;
 
-class ExtraTaxDTO
+class ExtraTaxDTO implements \JsonSerializable
 {
     protected float $euros_per_resident;
     protected string $city;
     protected string $code_insee;
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'euros_per_resident' => $this->euros_per_resident,
+            'city' => $this->city,
+            'code_insee' => $this->code_insee,
+        ];
+    }
 
     public function getEurosPerResident()
     {
