@@ -9,51 +9,45 @@ class ArrayHydrator
      * avec les données provenant d'un tableau source
      * en se basant sur une clé commune.
      */
-    public function hydrate(array $data, array $source, string $key, array $exclude = []): array
+    public function hydrate(array $assoc_array, array $json_array, string $compare_key_assoc, string $compare_key_json, string $target_key): array
     {
-        $indexedSource = $this->indexSource($source, $key);
-        return $this->hydrateRecursive($data, $indexedSource, $key, $exclude);
-    }
-
-    protected function indexSource(array $source, string $key): array
-    {
+        // Pré-indexation des JSON par valeur de code_insee
+        // Permet d'éviter de boucler inutilement plusieurs fois
         $indexed = [];
 
-        foreach ($source as $item) {
-            $itemArray = $item->jsonSerialize();
-            if (isset($itemArray[$key])) {
-                if(isset($indexed[$itemArray[$key]])) {
-                    $indexed[$itemArray[$key]] = array_merge($indexed[$itemArray[$key]], $itemArray);
-                } else {
-                    $indexed[$itemArray[$key]] = $itemArray;
-                }
+        foreach ($json_array as $obj) {
+            $item = $obj->jsonSerialize();
+            if (!isset($item[$compare_key_json])) {
+                continue;
+            }
+
+            $value = strtolower($item[$compare_key_json]);
+
+            // Retire la clé de comparaison
+            //unset($item[$compare_key_json]);
+
+            $indexed[$value][] = $item;
+        }
+        // Maintenant, on fusionne pour chaque commune
+        foreach ($assoc_array as &$city) {
+            // Vérifie que la commune possède la clé de comparaison
+            if (!isset($city[$compare_key_assoc])) {
+                continue;
+            }
+
+            $value = strtolower($city[$compare_key_assoc]);
+
+            // Initialiser le tableau cible si pas présent
+            if (!isset($city[$target_key])) {
+                $city[$target_key] = [];
+            }
+
+            // Si nous avons trouvé des éléments correspondants, on les ajoute
+            if (isset($indexed[$value])) {
+                $city[$target_key][] = $indexed[$value];
             }
         }
 
-        return $indexed;
-    }
-
-
-    protected function hydrateRecursive(array $data, array $indexedSource, string $key, array $exclude): array
-    {
-        foreach ($data as &$item) {
-            if (is_array($item)) {
-                if (isset($item[$key]) && isset($indexedSource[$item[$key]])) {
-                    $item = $this->mergeItem($item, $indexedSource[$item[$key]], $exclude);
-                }
-                $item = $this->hydrateRecursive($item, $indexedSource, $key, $exclude);
-            }
-        }
-
-        return $data;
-    }
-
-    protected function mergeItem(array $item, array $sourceData, array $exclude): array
-    {
-        foreach ($exclude as $ex) {
-            unset($sourceData[$ex]);
-        }
-
-        return array_merge($item, $sourceData);
+        return $assoc_array;
     }
 }

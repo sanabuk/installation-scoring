@@ -12,7 +12,7 @@ class NearbyFarmDTO implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'quantity_farm_in_'.$this->year => $this->quantity,
+            'quantity' => $this->quantity,
             'code_insee' => $this->code_insee,
             'year' => $this->year,
             'municipality_name' => $this->municipality_name,

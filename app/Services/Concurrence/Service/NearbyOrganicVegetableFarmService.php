@@ -5,6 +5,7 @@ namespace App\Services\Concurrence\Service;
 use App\Services\Concurrence\DTO\NearbyOrganicVegetableFarmDTO;
 use App\Services\Concurrence\Scraper\GetNearbyOrganicVegetableFarms;
 use DateTime;
+use Illuminate\Support\Facades\Http;
 use stdClass;
 
 class NearbyOrganicVegetableFarmService
@@ -33,6 +34,10 @@ class NearbyOrganicVegetableFarmService
         if(!$check_activity){
             return null;
         }
+        $code_insee = $this->getCodeInseeFromLatAndLon(
+            $rawData['adressesOperateurs'][0]['location']['lat'],
+            $rawData['adressesOperateurs'][0]['location']['lon']
+        );
         $nearbyOrganicVegetableFarmDTO = new NearbyOrganicVegetableFarmDTO;
         $nearbyOrganicVegetableFarmDTO->setName($rawData['nom']);
         $nearbyOrganicVegetableFarmDTO->setNameAnnuaire($rawData['nomAnnuaire']);
@@ -55,7 +60,17 @@ class NearbyOrganicVegetableFarmService
         $nearbyOrganicVegetableFarmDTO->setVenteParticuliers($rawData['annuaireInformation']['venteParticuliers']);
         $nearbyOrganicVegetableFarmDTO->setVenteRestoCollective($rawData['annuaireInformation']['venteRestauCollective']);
         $nearbyOrganicVegetableFarmDTO->setVenteRestoActivity($rawData['annuaireInformation']['venteRestauCommerciale']);
+        $nearbyOrganicVegetableFarmDTO->setHoraires((object)$rawData['annuaireInformation']['horaires']);
         $nearbyOrganicVegetableFarmDTO->setDistance($rawData['adresseOperateur']['distance']);
+        $nearbyOrganicVegetableFarmDTO->setCodeInsee($code_insee);
         return $nearbyOrganicVegetableFarmDTO;
+    }
+
+    private function getCodeInseeFromLatAndLon(float $lat, float $lon): ?string
+    {
+        $response = Http::get('https://api-adresse.data.gouv.fr/reverse?lat='.$lat.'&lon='.$lon.'&limit=1');
+        $data = $response->json();
+        $code_insee = $data['features'][0]['properties']['citycode'] ?? null;   
+        return $code_insee;
     }
 }

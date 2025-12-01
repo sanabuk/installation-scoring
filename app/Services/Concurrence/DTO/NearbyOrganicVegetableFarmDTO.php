@@ -5,7 +5,7 @@ namespace App\Services\Concurrence\DTO;
 use DateTime;
 use stdClass;
 
-class NearbyOrganicVegetableFarmDTO
+class NearbyOrganicVegetableFarmDTO implements \JsonSerializable
 {
     protected string $name;
     protected ?string $name_annuaire;
@@ -29,7 +29,38 @@ class NearbyOrganicVegetableFarmDTO
     protected ?bool $vente_resto_collective;
     protected ?bool $vente_resto_activity;
     protected stdClass $horaires;
-    protected float $distance;
+    protected ?float $distance;
+    protected ?string $code_insee;
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'name' => $this->name,
+            'name_annuaire' => $this->name_annuaire,
+            'siret' => $this->siret,
+            'date_premier_engagement' => $this->date_premier_engagement,
+            'phone1' => $this->phone1,
+            'phone2' => $this->phone2,
+            'responsable' => $this->responsable,
+            'address1' => $this->address1,
+            'zipcode1' => $this->zipcode1,
+            'city1' => $this->city1,
+            'address2' => $this->address2,
+            'zipcode2' => $this->zipcode2,
+            'city2' => $this->city2,
+            'url' => $this->url,
+            'lon' => $this->lon,
+            'lat' => $this->lat,
+            'vente_pros_gros' => $this->vente_pros_gros,
+            'vente_pros_details' => $this->vente_pros_details,
+            'vente_particuliers' => $this->vente_particuliers,
+            'vente_resto_collective' => $this->vente_resto_collective,
+            'vente_resto_activity' => $this->vente_resto_activity,
+            'horaires' => $this->horaires,
+            'distance' => $this->distance,
+            'code_insee' => $this->code_insee
+        ];
+    }
 
     public function getName()
     {
@@ -259,6 +290,16 @@ class NearbyOrganicVegetableFarmDTO
     public function setDistance(?float $distance)
     {
         $this->distance = $distance; 
+    }
+
+    public function getCodeInsee()
+    {
+        return $this->code_insee;
+    }
+
+    public function setCodeInsee(?string $code_insee)
+    {
+        $this->code_insee = $code_insee;
     }
 
 }

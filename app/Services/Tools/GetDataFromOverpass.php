@@ -4,7 +4,6 @@ namespace App\Services\Tools;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
-use Nette\Utils\Json;
 
 class GetDataFromOverpass
 {
@@ -41,7 +40,6 @@ class GetDataFromOverpass
             $datas_from_api = $response->json();
             $datas[$this->amenity] = [];
             foreach ($datas_from_api['elements'] ?? [] as $element) {
-                dump($element);
                 if (isset($element['tags']['amenity']) && $element['tags']['amenity'] == $this->amenity) {
                     $datas[$this->amenity][] = $element['tags'];
                 }

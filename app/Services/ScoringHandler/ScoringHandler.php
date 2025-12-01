@@ -45,24 +45,23 @@ class ScoringHandler
         //dump($nearbyFarms);
 
         $hydrator = new ArrayHydrator();
-        $_results = $hydrator->hydrate($nearbyMunicipalities, $nearbyFarms, 'code_insee', ['code_insee','municipality_name','year']);
+        $_results = $hydrator->hydrate($nearbyMunicipalities, $nearbyFarms, 'code_insee', 'code_insee', 'nearby_farms');
 
-        // $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
-        // $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
-        // dump($nearbyOrganicVegetableFarms);
+        $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
+        $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
+        $_results_with_organic_farms = $hydrator->hydrate($_results, $nearbyOrganicVegetableFarms, 'code_insee', 'code_insee', 'nearby_organic_vegetable_farms');
 
         $extraTaxService = new ExtraTaxService();
         $extraTaxInfo = $extraTaxService->getExtraTax($codes_insee_array);
 
-        $_results_with_extra_tax = $hydrator->hydrate($_results, $extraTaxInfo, 'code_insee', ['code_insee','city']);
-        //dump($_results_with_extra_tax);
+        $_results_with_extra_tax = $hydrator->hydrate($_results_with_organic_farms, $extraTaxInfo, 'code_insee', 'code_insee', 'extra_tax');
 
         $incomingTaxInfos = [];
         foreach ($codes_insee_array as $code_insee) {
             $incomingTaxService = new IncomingTaxService();
             $incomingTaxInfos[] = $incomingTaxService->getIncomingTax($code_insee);
         }
-        $results = $hydrator->hydrate($_results_with_extra_tax, $incomingTaxInfos, 'code_insee', ['code_insee','municipality']);
+        $results = $hydrator->hydrate($_results_with_extra_tax, $incomingTaxInfos, 'code_insee', 'code_insee', 'incoming_tax');
         dump($results);
     }
 
