@@ -2,6 +2,7 @@
 
 namespace App\Services\Tools;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
@@ -30,23 +31,26 @@ class GetDataFromOverpass
             out geom;'
         );
 
-        $response = Http::withHeaders([
+        try {
+            $response = Http::withHeaders([
             'Content-Type' => 'application/json; charset=utf-8'
-        ])->get($overpass_url,[
-            'data' => $query
-        ]);
+            ])->get($overpass_url,[
+                'data' => $query
+            ]);
 
-        if ($response->successful()) {
             $datas_from_api = $response->json();
             $datas[$this->amenity] = [];
             foreach ($datas_from_api['elements'] ?? [] as $element) {
                 if (isset($element['tags']['amenity']) && $element['tags']['amenity'] == $this->amenity) {
-                    $datas[$this->amenity][] = $element['tags'];
+                    $datas[$this->amenity][] = $element;
                 }
             }
             return response()->json(array_unique($datas[$this->amenity], SORT_REGULAR));
-        } else {
-            return response()->json(['error' => 'Unable to fetch data'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Overpass API from GetDataFromOverpass class: ' . $e->getMessage());
+            throw new \Exception('Overpass API request failed with status: ' . $e->getMessage());
         }
+        
+
     }
 }

@@ -4,9 +4,9 @@ namespace App\Services\Concurrence\Service;
 
 use App\Services\Concurrence\DTO\NearbyOrganicVegetableFarmDTO;
 use App\Services\Concurrence\Scraper\GetNearbyOrganicVegetableFarms;
+use App\Services\Tools\GetCodeInseeFromLatAndLon;
 use DateTime;
-use Illuminate\Support\Facades\Http;
-use stdClass;
+
 
 class NearbyOrganicVegetableFarmService
 {
@@ -68,9 +68,7 @@ class NearbyOrganicVegetableFarmService
 
     private function getCodeInseeFromLatAndLon(float $lat, float $lon): ?string
     {
-        $response = Http::get('https://api-adresse.data.gouv.fr/reverse?lat='.$lat.'&lon='.$lon.'&limit=1');
-        $data = $response->json();
-        $code_insee = $data['features'][0]['properties']['citycode'] ?? null;   
-        return $code_insee;
+        $tool = new GetCodeInseeFromLatAndLon((string)$lat, (string)$lon);
+        return $tool();
     }
 }
