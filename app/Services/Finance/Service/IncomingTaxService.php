@@ -4,14 +4,21 @@ namespace App\Services\Finance\Service;
 
 use App\Services\Finance\Scraper\GetIncomingTax;
 use App\Services\Finance\DTO\IncomingTaxDTO;
+use Illuminate\Support\Facades\Log;
 
 class IncomingTaxService
 {
     public function getIncomingTax(string $code_insee)
     {
-        $getIncomingTaxFromApi = new GetIncomingTax($code_insee);
-        $rawDatas = $getIncomingTaxFromApi();
-        return $this->mapToIncomingTaxDTO($rawDatas);
+        try {
+            $getIncomingTaxFromApi = new GetIncomingTax($code_insee);
+            $rawDatas = $getIncomingTaxFromApi();
+            return $this->mapToIncomingTaxDTO($rawDatas);
+        } catch (\Exception $e) {
+            Log::error('Error in IncomingTaxService class: ' . $e->getMessage());
+            throw $e;
+        }
+        
     }
 
     private function mapToIncomingTaxDTO($rawData)

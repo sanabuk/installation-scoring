@@ -33,38 +33,43 @@ class GetNearbyCitiesByDuration
      */
     private function getCitiesFromIsochrone(string $polygonString): JsonResponse
     {
-        $overpass_url = "https://overpass-api.de/api/interpreter";
-
-        $query = sprintf(
-            '[out:json];
-            (
-            relation["admin_level"="8"]["boundary"="administrative"]["name"~".*"](poly:"' . $polygonString . '");
+        try {
+            $overpass_url = "https://overpass-api.de/api/interpreter";
+            $query = sprintf(
+                '[out:json];
+                (
+                relation["admin_level"="8"]["boundary"="administrative"]["name"~".*"](poly:"' . $polygonString . '");
+                );
+                out geom;'
             );
-            out geom;'
-        );
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json; charset=utf-8'
-        ])->get($overpass_url,[
-            'data' => $query
-        ]);
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json; charset=utf-8'
+            ])->get($overpass_url,[
+                'data' => $query
+            ]);
 
-        if(!$response->successful()) {
-            Log::error('Overpass API request failed with message: ' . $response->status());
-            throwException(new \Exception('Failed to retrieve data from Overpass API'));
-        }
-        $data = $response->json();
-        $communes = [];
-        foreach ($data['elements'] ?? [] as $element) {
-            if (isset($element['tags']['name']) && isset($element['tags']['ref:INSEE']) && isset($element['tags']['population'])) {
-                $communes[] = [
-                    'name' => $element['tags']['name'],
-                    'code_insee' => $element['tags']['ref:INSEE'],
-                    'code_postal' => $element['tags']['postal_code'],
-                    'population' => $element['tags']['population']
-                ];
+            if(!$response->successful()) {
+                Log::error('Overpass API request failed with message: ' . $response->status());
+                throwException(new \Exception('Failed to retrieve data from Overpass API'));
             }
+            $data = $response->json();
+            $communes = [];
+            foreach ($data['elements'] ?? [] as $element) {
+                if (isset($element['tags']['name']) && isset($element['tags']['ref:INSEE']) && isset($element['tags']['population'])) {
+                    $communes[] = [
+                        'name' => $element['tags']['name'],
+                        'code_insee' => $element['tags']['ref:INSEE'],
+                        'code_postal' => $element['tags']['postal_code'],
+                        'population' => $element['tags']['population']
+                    ];
+                }
+            }
+            return response()->json(array_unique($communes, SORT_REGULAR));
+        } catch (\Exception $e) {
+            Log::error('Error in GetNearbyCitiesByDuration class: ' . $e->getMessage());
+            throw $e;
         }
-        return response()->json(array_unique($communes, SORT_REGULAR));
+
     }    
 }

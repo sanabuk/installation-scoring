@@ -4,6 +4,7 @@ namespace App\Services\Geographic\Scraper;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GetNearbyMunicipalities 
 {
@@ -20,29 +21,28 @@ class GetNearbyMunicipalities
 
     public function __invoke():JsonResponse
     {
-        $overpass_url = "https://overpass-api.de/api/interpreter";
+        try {
+            $overpass_url = "https://overpass-api.de/api/interpreter";
 
-        $query = sprintf(
-            "[out:json];
-            (
-              way[\"admin_level\"=\"8\"][\"boundary\"=\"administrative\"][name](around:%d,%s,%s);
-              relation[\"admin_level\"=\"8\"][\"boundary\"=\"administrative\"][name](around:%d,%s,%s);
+            $query = sprintf(
+                "[out:json];
+                (
+                way[\"admin_level\"=\"8\"][\"boundary\"=\"administrative\"][name](around:%d,%s,%s);
+                relation[\"admin_level\"=\"8\"][\"boundary\"=\"administrative\"][name](around:%d,%s,%s);
+                );
+                out body;
+                >;
+                out skel qt;",
+                $this->radius_km * 1000, $this->lat, $this->lon,
+                $this->radius_km * 1000, $this->lat, $this->lon
             );
-            out body;
-            >;
-            out skel qt;",
-            $this->radius_km * 1000, $this->lat, $this->lon,
-            $this->radius_km * 1000, $this->lat, $this->lon
-        );
 
-        $response = Http::withHeaders([
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json; charset=utf-8'
-            ])->get($overpass_url, [
-                'data' => $query
-            ]);
-
-        if ($response->successful()) {
+            $response = Http::withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json; charset=utf-8'
+                ])->get($overpass_url, [
+                    'data' => $query
+                ]);
             $data = $response->json();
             $communes = [];
             foreach ($data['elements'] ?? [] as $element) {
@@ -55,8 +55,9 @@ class GetNearbyMunicipalities
                 }
             }
             return response()->json(array_unique($communes, SORT_REGULAR));
-        } else {
-            return response()->json(['error' => 'Unable to fetch data'], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Error in GetNearbyMunicipalities class: ' . $e->getMessage());
+            throw $e;
         }
     }
 }

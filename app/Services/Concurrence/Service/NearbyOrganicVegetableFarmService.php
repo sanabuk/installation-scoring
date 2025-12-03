@@ -6,20 +6,26 @@ use App\Services\Concurrence\DTO\NearbyOrganicVegetableFarmDTO;
 use App\Services\Concurrence\Scraper\GetNearbyOrganicVegetableFarms;
 use App\Services\Tools\GetCodeInseeFromLatAndLon;
 use DateTime;
-
+use Illuminate\Support\Facades\Log;
 
 class NearbyOrganicVegetableFarmService
 {
     public function getNearbyOrganicVegetableFarms(float $lat,float $lon,?int $radius): array
     {
-        $scraper = new GetNearbyOrganicVegetableFarms($lat, $lon, $radius);
-        $response = $scraper();
-        $data = json_decode($response->getContent(), true);
+        try {
+            $scraper = new GetNearbyOrganicVegetableFarms($lat, $lon, $radius);
+            $response = $scraper();
+            $data = json_decode($response->getContent(), true);
+            
+            return array_values(array_filter(
+                array_map(fn($rawData) => $this->mapToNearbyOrganicVegetableFarmDTO($rawData), $data['items']),
+                fn($v) => $v !== null
+            ));
+        } catch (\Exception $e) {
+            Log::error('Error in NearbyOrganicVegetableFarmService class: ' . $e->getMessage());
+            throw $e;
+        }
         
-        return array_values(array_filter(
-            array_map(fn($rawData) => $this->mapToNearbyOrganicVegetableFarmDTO($rawData), $data['items']),
-            fn($v) => $v !== null
-        ));
     }
 
     private function mapToNearbyOrganicVegetableFarmDTO(array $rawData):?NearbyOrganicVegetableFarmDTO

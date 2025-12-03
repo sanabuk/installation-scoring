@@ -3,7 +3,7 @@
 namespace App\Services\Tools;
 
 use Illuminate\Support\Facades\Http;
-
+use Illuminate\Support\Facades\Log;
 
 class GetIsochroneByDuration
 {
@@ -20,18 +20,24 @@ class GetIsochroneByDuration
         $this->type_locomotion = $type;
     }
 
-    public function getIsochrone()
+    public function getIsochrone(): array
     {
-        $url = 'https://api.openrouteservice.org/v2/isochrones/' . $this->type_locomotion;
-        $response = Http::withHeaders([
-            'Authorization' => env('OPEN_ROUTE_SERVICE_API_KEY')
-        ])->post($url,[
-            'locations' => [[$this->lon,$this->lat]],
-            'range' => [$this->duration]
-        ]);
-        $isochroneData = json_decode($response, true);
-        $polygon = $isochroneData['features'][0]['geometry']['coordinates'][0];
-        return $polygon;
+        try {
+            $url = 'https://api.openrouteservice.org/v2/isochrones/' . $this->type_locomotion;
+            $response = Http::withHeaders([
+                'Authorization' => env('OPEN_ROUTE_SERVICE_API_KEY')
+            ])->post($url,[
+                'locations' => [[$this->lon,$this->lat]],
+                'range' => [$this->duration]
+            ]);
+            $isochroneData = json_decode($response, true);
+            $polygon = $isochroneData['features'][0]['geometry']['coordinates'][0];
+            return $polygon;
+        } catch (\Exception $e) {
+            Log::error('Error in GetIsochroneByDuration class: ' . $e->getMessage());
+            throw $e;
+        }
+        
     }
 
     public function splitIsochrone(array $isochrone):array
