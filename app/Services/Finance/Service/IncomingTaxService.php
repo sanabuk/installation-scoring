@@ -23,15 +23,21 @@ class IncomingTaxService
 
     private function mapToIncomingTaxDTO($rawData)
     {
-        $incomingTaxDTO = new IncomingTaxDTO;
-        $incomingTaxDTO->setCodeInsee($rawData['codeinsee']);
-        $incomingTaxDTO->setMunicipality($rawData['Unnamed: 2']);
-        $incomingTaxDTO->setNumberOfTaxableHouseholds($rawData['Unnamed: 4']);
-        $incomingTaxDTO->setNumberOfTaxedHouseholds($rawData['Unnamed: 7']);
-        $incomingTaxDTO->setNumberOfHouseholdsTaxedOnSalary($rawData['Unnamed: 9']);
-        $incomingTaxDTO->setAmountBySalary($rawData['Unnamed: 10']);
-        $incomingTaxDTO->setNumberOfHouseholdsTaxedOnPension($rawData['Unnamed: 11']);
-        $incomingTaxDTO->setAmountByPension($rawData['Unnamed: 12']);
-        return $incomingTaxDTO;
+        try {
+            $incomingTaxDTO = new IncomingTaxDTO;
+            $incomingTaxDTO->setCodeInsee($rawData['codeinsee']);
+            $incomingTaxDTO->setMunicipality($rawData['Unnamed: 2']);
+            $incomingTaxDTO->setNumberOfTaxableHouseholds((int)$rawData['Unnamed: 4']);
+            $incomingTaxDTO->setNumberOfTaxedHouseholds((int)$rawData['Unnamed: 7']);
+            $incomingTaxDTO->setNumberOfHouseholdsTaxedOnSalary((int)$rawData['Unnamed: 9']);
+            $incomingTaxDTO->setAmountBySalary((float)$rawData['Unnamed: 10']);
+            $incomingTaxDTO->setNumberOfHouseholdsTaxedOnPension((int)$rawData['Unnamed: 11']);
+            $incomingTaxDTO->setAmountByPension((float)$rawData['Unnamed: 12']);
+            return $incomingTaxDTO;
+        } catch (\Exception $e) {
+            Log::error('Error mapping to IncomingTaxDTO: ' . $e->getMessage());
+            throw $e;
+        }
+        
     }
 }
