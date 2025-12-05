@@ -18,7 +18,7 @@ class NearbyOrganicVegetableFarmService
             $data = json_decode($response->getContent(), true);
             
             return array_values(array_filter(
-                array_map(fn($rawData) => $this->mapToNearbyOrganicVegetableFarmDTO($rawData), $data['items']),
+                array_map(fn($rawData) => $this->mapToNearbyOrganicVegetableFarmDTO($rawData), $data['items']??[]),
                 fn($v) => $v !== null
             ));
         } catch (\Exception $e) {
