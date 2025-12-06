@@ -7,3 +7,5 @@ Route::get('/', function () {
 });
 
 Route::post('/start-scoring', [App\Http\Controllers\ScoringController::class, 'startScoring'])->name('start.scoring');
+
+Route::get('/scoring-result/{code_insee}', [App\Http\Controllers\ScoringController::class, 'getScoringResult'])->name('scoring.result');

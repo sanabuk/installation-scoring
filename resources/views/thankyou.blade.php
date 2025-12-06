@@ -19,11 +19,11 @@
             animation: fadeIn 0.5s ease-out;
         }
 
-        .merci-container h1 {
+        /* .merci-container h1 {
             font-size: 2.2rem;
             margin-bottom: 20px;
             color: #2b7d4f;
-        }
+        } */
 
         .merci-container p {
             font-size: 1.15rem;
@@ -66,7 +66,7 @@
     <div class="container">
         <header>
         <div class="logo">
-            <div class="mark">IS</div>
+            <a class="mark" href="/">IS</a>
             <div>
             <div style="font-weight:700">Installation Scoring</div>
             <div style="font-size:13px;color:var(--muted)">Analyse marché — fermes maraîchères bio</div>
@@ -87,7 +87,7 @@
                 <h1>Merci pour votre demande 🎉</h1>
                 <p>
                     Votre étude personnalisée est en cours de génération.<br>
-                    Vous allez recevoir un email avec **votre rapport complet** dans quelques instants.
+                    Vous allez recevoir un email avec <b>votre rapport complet</b> dans quelques instants.
                 </p>
 
                 <a href="/" class="btn-primary">↩ Retour à la page d’accueil</a>

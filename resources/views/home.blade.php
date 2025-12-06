@@ -15,7 +15,7 @@
   <div class="container">
     <header>
       <div class="logo">
-        <div class="mark">IS</div>
+        <a class="mark" href="/">IS</a>
         <div>
           <div style="font-weight:700">Installation Scoring</div>
           <div style="font-size:13px;color:var(--muted)">Analyse marché — fermes maraîchères bio</div>
