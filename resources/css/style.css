@@ -60,7 +60,7 @@ footer{margin-top:40px;padding:28px 0;color:var(--muted);font-size:14px}
 
 /* Card City */
 .population{display:flex;flex-direction:row;flex-wrap: wrap;}
-.card-city{border:1px solid var(--soil);margin:1em;padding:1em;border-radius: 1em;width: 205px;min-height: 225px;}
+.card-city{border:1px solid var(--soil);margin:1em;padding:0 1em;border-radius: 1em;width: 307px;min-height: 225px;}
 .card-city ul{padding:0}
 .card-city li{list-style: none;}
 
