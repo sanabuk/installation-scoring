@@ -41,8 +41,8 @@ class NearbyOrganicVegetableFarmService
             return null;
         }
         $code_insee = $this->getCodeInseeFromLatAndLon(
-            $rawData['adressesOperateurs'][0]['location']['lat'],
-            $rawData['adressesOperateurs'][0]['location']['lon']
+            isset($rawData['adressesOperateurs'][0]['location']['lat']) ? $rawData['adressesOperateurs'][0]['location']['lat']:0,
+            isset($rawData['adressesOperateurs'][0]['location']['lon']) ? $rawData['adressesOperateurs'][0]['location']['lon']:0
         );
         $nearbyOrganicVegetableFarmDTO = new NearbyOrganicVegetableFarmDTO;
         $nearbyOrganicVegetableFarmDTO->setName($rawData['nom']);
