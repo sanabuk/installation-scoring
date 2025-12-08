@@ -11,21 +11,33 @@ use function PHPUnit\Framework\throwException;
 class GetNearbyCitiesByDuration
 {
     public string $isochrone;
+    public int $interval;
 
-    public function __construct(string $isochrone)
+    public function __construct(string $isochrone, int $interval)
     {
         $this->isochrone = $isochrone;
+        $this->interval = $interval;
     }
 
     public function __invoke():array
     {
-        return $this->getCities();
+        try {
+            return $this->getCities();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        
     }
 
     private function getCities():array
     {
-        $cities_from_isochrone = $this->getCitiesFromIsochrone($this->isochrone);
-        return $cities_from_isochrone->getOriginalContent();
+        try {
+            $cities_from_isochrone = $this->getCitiesFromIsochrone($this->isochrone);
+            return $cities_from_isochrone->getOriginalContent();
+        } catch (\Exception $e) {
+            throw $e;
+        }
+        
     }
 
     /**
@@ -48,11 +60,7 @@ class GetNearbyCitiesByDuration
             ])->get($overpass_url,[
                 'data' => $query
             ]);
-
-            if(!$response->successful()) {
-                Log::error('Overpass API request failed with message: ' . $response->status());
-                throwException(new \Exception('Failed to retrieve data from Overpass API'));
-            }
+            
             $data = $response->json();
             $communes = [];
             foreach ($data['elements'] ?? [] as $element) {
@@ -61,7 +69,8 @@ class GetNearbyCitiesByDuration
                         'name' => $element['tags']['name'],
                         'code_insee' => $element['tags']['ref:INSEE'],
                         'code_postal' => $element['tags']['postal_code'],
-                        'population' => $element['tags']['population']
+                        'population' => $element['tags']['population'],
+                        'limit_duration' => $this->interval
                     ];
                 }
             }
