@@ -11,13 +11,15 @@ class GetIsochroneByDuration
     protected float $lon;
     protected int $duration; // in minutes
     protected string $type_locomotion;
+    protected int $interval;
 
-    public function __construct(float $lat, float $lon, int $duration, string $type="driving-car")
+    public function __construct(float $lat, float $lon, int $duration=15, string $type="driving-car", int $interval=300)
     {
         $this->lat = $lat;
         $this->lon = $lon;
         $this->duration = $duration*60;
         $this->type_locomotion = $type;
+        $this->interval = $interval;
     }
 
     public function getIsochrone(): array
@@ -28,11 +30,12 @@ class GetIsochroneByDuration
                 'Authorization' => env('OPEN_ROUTE_SERVICE_API_KEY')
             ])->post($url,[
                 'locations' => [[$this->lon,$this->lat]],
-                'range' => [$this->duration]
+                'range' => [$this->duration],
+                'interval' => $this->interval
             ]);
             $isochroneData = json_decode($response, true);
-            $polygon = $isochroneData['features'][0]['geometry']['coordinates'][0];
-            return $polygon;
+            $polygons = $isochroneData['features'];
+            return $polygons;
         } catch (\Exception $e) {
             Log::error('Error in GetIsochroneByDuration class: ' . $e->getMessage());
             throw $e;
@@ -43,7 +46,7 @@ class GetIsochroneByDuration
     public function splitIsochrone(array $isochrone):array
     {
         $isochrone_length = count($isochrone);
-        $isochrone_split_key = floor($isochrone_length/2);
+        $isochrone_split_key = ceil($isochrone_length/3);
         $first_polygon = $isochrone[0];
 
         $polygon_first_string = '';
@@ -54,11 +57,26 @@ class GetIsochroneByDuration
         $polygon_first_string = rtrim($polygon_first_string);
 
         $polygon_second_string = '';
-        for ($i=$isochrone_split_key; $i < $isochrone_length; $i++) { 
+        for ($i=$isochrone_split_key; $i < $isochrone_split_key * 2; $i++) { 
             $polygon_second_string .= $isochrone[$i][1].' '.$isochrone[$i][0].' ';
         }
         $polygon_second_string .= $isochrone[$isochrone_split_key][1].' '. $isochrone[$isochrone_split_key][0];
+        $polygon_second_string = rtrim($polygon_second_string);
 
-        return [$polygon_first_string, $polygon_second_string];
+        $polygon_third_string = '';
+        for ($i=$isochrone_split_key * 2; $i < $isochrone_length; $i++) { 
+            $polygon_third_string .= $isochrone[$i][1].' '.$isochrone[$i][0].' ';
+        }
+        $polygon_third_string .= $isochrone[$isochrone_split_key * 2][1].' '. $isochrone[$isochrone_split_key * 2][0];
+        $polygon_third_string = rtrim($polygon_third_string);
+
+        $polygon_fourth_string = '';
+        $polygon_fourth_string .= $isochrone[0][1].' '. $isochrone[0][0];
+        $polygon_fourth_string .= $isochrone[$isochrone_split_key][1].' '. $isochrone[$isochrone_split_key][0];
+        $polygon_fourth_string .= $isochrone[$isochrone_split_key * 2][1].' '. $isochrone[$isochrone_split_key * 2][0];
+        $polygon_fourth_string .= $isochrone[0][1].' '. $isochrone[0][0];
+        $polygon_fourth_string = rtrim($polygon_fourth_string);
+
+        return [$polygon_first_string, $polygon_second_string, $polygon_third_string, $polygon_fourth_string];
     }
 }
