@@ -49,14 +49,29 @@ class ScoringHandler
                 $isochrone = $isochrone_feature['geometry']['coordinates'][0];
                 $interval = $isochrone_feature['properties']['value'];
                 Log::info('Processing isochrone with interval: ' . $interval);
-                $split_isochrones = $polygonIsochroneService->splitIsochrone($isochrone);
+                if ($interval > 600) {
+                    $split_isochrones = $polygonIsochroneService->splitIsochrone($isochrone);
+                } else {
+                    $split_isochrones = [ ];
+                    $polygon_string = '';
+                    foreach ($isochrone as $point) {
+                        $polygon_string .= $point[1].' '.$point[0].' ';
+                    }
+                    $polygon_string = rtrim($polygon_string);
+                    $split_isochrones[] = $polygon_string;
+                }
+                
                 
                 foreach ($split_isochrones as $polygon_string) {
                     $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string, $interval);
                     sleep(1); // To avoid Overpass API rate limit
                     $_cities[] = $scrapNearbyCitiesByDuration();
                 }
-                $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1]));
+                if ($interval > 600) {
+                    $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1]));
+                } else {
+                    $nearbyMunicipalities[] = $_cities[0];
+                }
             }
             $nearbyMunicipalities = $this->mergeUniqueByKeys(array_merge($nearbyMunicipalities[0], $nearbyMunicipalities[1], $nearbyMunicipalities[2]));
 
