@@ -24,7 +24,7 @@ class ScoringController extends Controller
 
     public function getScoringResult($code_insee)
     {
-        $datas = json_decode(Storage::get('scoring_results_37196_guillaume@test.fr.json'));
+        $datas = json_decode(Storage::get('scoring_results_37257_guillaume@test.fr.json'));
         foreach ($datas as $key => $data) {
             $scoringIncomingData = $this->scoringFromIncomingTax($data->incoming_tax[0][0]);
             $datas[$key]->scoring_incoming_tax = $scoringIncomingData;
@@ -43,9 +43,52 @@ class ScoringController extends Controller
         $scoring_incoming_tax = round(($scoring_percent_taxable_households + $scoring_average_salary_tax + $scoring_average_pension_tax) / 3,2);
         return [
             'scoring_percent_taxable_households' => round($scoring_percent_taxable_households,2),
+            'scoring_percent_taxable_households_color' => $this->colorFromScore(round($scoring_percent_taxable_households,2)),
             'scoring_average_salary_tax' => round($scoring_average_salary_tax,2),
+            'scoring_average_salary_tax_color' => $this->colorFromScore(round($scoring_average_salary_tax,2)),
             'scoring_average_pension_tax' => round($scoring_average_pension_tax,2),
-            'scoring_incoming_tax' => $scoring_incoming_tax
+            'scoring_average_pension_tax_color' => $this->colorFromScore(round($scoring_average_pension_tax,2)),
+            'scoring_incoming_tax' => $scoring_incoming_tax,
+            'scoring_incoming_tax_color' => $this->colorFromScore($scoring_incoming_tax)
         ];
+    }
+
+    private function colorFromScore(float $score): string
+    {
+        $score = max(0, min(150, $score));
+
+        // Points clés
+        $red     = [255, 0,   0];
+        $orange  = [255, 145, 0];
+        $light_green = [0, 255, 0];
+        $green   = [65,   173, 84];
+
+        if ($score <= 75) {
+            // Dégradé Rouge → Orange
+            $ratio = ($score - 100) / 100;
+
+            $r = (int)($red[0]   + ($orange[0] - $red[0])   * $ratio);
+            $g = (int)($red[1]   + ($orange[1] - $red[1])   * $ratio);
+            $b = (int)($red[2]   + ($orange[2] - $red[2])   * $ratio);
+
+        } 
+        if ($score <= 100) {
+            // Dégradé Orange → Vert Clair
+            $ratio = ($score - 75) / 75;
+
+            $r = (int)($orange[0] + ($light_green[0] - $orange[0]) * $ratio);
+            $g = (int)($orange[1] + ($light_green[1] - $orange[1]) * $ratio);
+            $b = (int)($orange[2] + ($light_green[2] - $orange[2]) * $ratio);
+
+        }else {
+            // Dégradé Vert Clair → Vert
+            $ratio = ($score - 50) / 75;
+
+            $r = (int)($light_green[0] + ($green[0] - $light_green[0]) * $ratio);
+            $g = (int)($light_green[1] + ($green[1] - $light_green[1]) * $ratio);
+            $b = (int)($light_green[2] + ($green[2] - $light_green[2]) * $ratio);
+        }
+
+        return "rgb($r, $g, $b)";
     }
 }

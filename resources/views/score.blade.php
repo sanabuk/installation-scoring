@@ -30,20 +30,20 @@
     </header>
     <h1>Scoring de votre emplacement</h1>
     <section>
-        <h2>1 - Le bassin de population</h2>
-        <p>La population située à 15 minutes en voiture de votre emplacement s'élève à xxxx personnes.</p>
+        <h2>1 - Le bassin de population et sa situation financière</h2>
+        <p>La population située à 15 minutes en voiture de votre emplacement s'élève à @php $population = array_reduce($datas, function($carry, $item){return $carry + $item->population;},0); echo($population); @endphp personnes.</p>
         <div class="population">
         @foreach ($datas as $city)
             <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
-                <h3 style="color:var(--soil)">{{ $city->name }}</h3>
+                <h3>{{ $city->name }} @if(count($city->nearby_organic_vegetable_farms))<span class="icon"><img src="./../img/farmer_icon.png" alt="farmer-icon" title="Maraicher Bio présent sur la commune"></span>@endif @if(count($city->restaurants))<span class="icon"><img src="./../img/restaurant_icon.png" alt="restaurant-icon" title="Restaurant présent sur la commune"></span>@endif</h3>
                 <ul>
                     <li>Durée : {{ $city->limit_duration/60 }} min</li>
                     <li>Population : {{ $city->population }}</li>
                     <li>Nb de foyers : {{ $city->incoming_tax[0][0]->number_of_taxable_households }}</li>
                     <li>Code insee : {{ $city->code_insee }}</li>
-                    <li>Score foyers imposables : {{ $city->scoring_incoming_tax['scoring_percent_taxable_households'] }}</li>
-                    <li>Score salaires : {{ $city->scoring_incoming_tax['scoring_average_salary_tax'] }}</li>
-                    <li>Score retraites/pensions : {{ $city->scoring_incoming_tax['scoring_average_pension_tax'] }}</li>
+                    <li>Score foyers imposables : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_percent_taxable_households_color'] }}"> {{ $city->scoring_incoming_tax['scoring_percent_taxable_households'] }}</span></li>
+                    <li>Score salaires : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_average_salary_tax_color'] }}"> {{ $city->scoring_incoming_tax['scoring_average_salary_tax'] }} </span></li>
+                    <li>Score retraites/pensions : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_average_pension_tax_color'] }}">{{ $city->scoring_incoming_tax['scoring_average_pension_tax'] }}</span></li>
                 </ul>
             </div>
         @endforeach
