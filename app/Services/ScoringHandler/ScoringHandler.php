@@ -12,6 +12,7 @@ use App\Services\Geographic\Scraper\GetNearbyCitiesByDuration;
 use App\Services\Tools\ArrayHydrator;
 use App\Services\Tools\GetCodeInseeFromLatAndLon;
 use App\Services\Tools\GetIsochroneByDuration;
+use App\Services\Tourism\Service\MarketplaceService;
 use App\Services\Tourism\Service\RestaurantService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -112,9 +113,19 @@ class ScoringHandler
             }
             Log::info('Restaurants info');
             $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
+
+            $marketplaces = [];
+            foreach ($split_isochrones as $polygon_string) {
+                $scrapMarketplacesOffer = new MarketplaceService();
+                $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
+            }
+            Log::info('Marketplaces info');
+            $_results_with_marketplaces = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
+
+
             $code_insee = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
             $code_insee_str = $code_insee();
-            Storage::put('scoring_results_'.$code_insee_str.'_'.$this->email.'.json', json_encode($_results_with_restaurants));
+            Storage::put('scoring_results_'.$code_insee_str.'_'.$this->email.'.json', json_encode($_results_with_marketplaces));
         } catch (\Exception $e) {
             Log::error('Error in ScoringHandler: '.$e);
             throw $e;

@@ -24,7 +24,7 @@ class ScoringController extends Controller
 
     public function getScoringResult($code_insee)
     {
-        $datas = json_decode(Storage::get('scoring_results_37257_guillaume@test.fr.json'));
+        $datas = json_decode(Storage::get('scoring_results_37003_guillaume@test.fr.json'));
         foreach ($datas as $key => $data) {
             $scoringIncomingData = $this->scoringFromIncomingTax($data->incoming_tax[0][0]);
             $datas[$key]->scoring_incoming_tax = $scoringIncomingData;
