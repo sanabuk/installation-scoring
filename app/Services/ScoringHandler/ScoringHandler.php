@@ -12,6 +12,7 @@ use App\Services\Geographic\Scraper\GetNearbyCitiesByDuration;
 use App\Services\Tools\ArrayHydrator;
 use App\Services\Tools\GetCodeInseeFromLatAndLon;
 use App\Services\Tools\GetIsochroneByDuration;
+use App\Services\Tools\GetPolygonFromCodeInsee;
 use App\Services\Tourism\Service\MarketplaceService;
 use App\Services\Tourism\Service\RestaurantService;
 use Illuminate\Support\Facades\Log;
@@ -51,9 +52,9 @@ class ScoringHandler
                 $interval = $isochrone_feature['properties']['value'];
                 Log::info('Processing isochrone with interval: ' . $interval);
                 if ($interval > 600) {
-                    $split_isochrones = $polygonIsochroneService->splitIsochrone($isochrone);
+                    $split_isochrones = $polygonIsochroneService->splitIsochroneInto4($isochrone);
                 } else {
-                    $split_isochrones = [ ];
+                    $split_isochrones = [];
                     $polygon_string = '';
                     foreach ($isochrone as $point) {
                         $polygon_string .= $point[1].' '.$point[0].' ';
@@ -69,7 +70,7 @@ class ScoringHandler
                     $_cities[] = $scrapNearbyCitiesByDuration();
                 }
                 if ($interval > 600) {
-                    $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1]));
+                    $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1],$_cities[2], $_cities[3]));
                 } else {
                     $nearbyMunicipalities[] = $_cities[0];
                 }
@@ -77,7 +78,7 @@ class ScoringHandler
             $nearbyMunicipalities = $this->mergeUniqueByKeys(array_merge($nearbyMunicipalities[0], $nearbyMunicipalities[1], $nearbyMunicipalities[2]));
 
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
-            // dump($codes_insee_array);
+            dump($codes_insee_array);
 
             $nearbyFarmService = new NearbyFarmService();
             $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
@@ -107,17 +108,25 @@ class ScoringHandler
             // dump($_results_with_incoming_tax);
 
             $restaurants = [];
-            foreach ($split_isochrones as $polygon_string) {
-                $scrapRestaurantsOffer = new RestaurantService($polygon_string);
-                $restaurants = array_merge($restaurants, $scrapRestaurantsOffer->getRestaurants($polygon_string));
+            foreach ($codes_insee_array as $code_insee) {
+                Log::info($code_insee);
+                $get_polygon = new GetPolygonFromCodeInsee($code_insee);
+                $polygon_string = $get_polygon();
+                $scrapRestaurantsOffer = new RestaurantService();
+                $new_restaurants = $scrapRestaurantsOffer->getRestaurants($polygon_string);
+                $restaurants = array_merge($restaurants, $new_restaurants);
+                //usleep(50*1000); // To avoid Overpass API rate limit
             }
             Log::info('Restaurants info');
             $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
 
             $marketplaces = [];
-            foreach ($split_isochrones as $polygon_string) {
+            foreach ($codes_insee_array as $code_insee) {
+                $get_polygon = new GetPolygonFromCodeInsee($code_insee);
+                $polygon_string = $get_polygon();
                 $scrapMarketplacesOffer = new MarketplaceService();
                 $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
+                //usleep(50*1000);  // To avoid Overpass API rate limit
             }
             Log::info('Marketplaces info');
             $_results_with_marketplaces = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');

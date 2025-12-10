@@ -2,7 +2,7 @@
 
 namespace App\Services\Tourism\Scraper;
 
-use App\Services\Tools\GetDataFromOverpass;
+use App\Services\Tools\GetDataByPolygonFromOverpass;
 use Illuminate\Support\Facades\Log;
 
 class GetMarketplacesOffer
@@ -17,9 +17,9 @@ class GetMarketplacesOffer
     public function __invoke()
     {
         try {
-            $call_overpass_node = new GetDataFromOverpass($this->polygon_string, 'marketplace', 'node');
+            $call_overpass_node = new GetDataByPolygonFromOverpass($this->polygon_string, 'marketplace', 'node');
             $marketplaces_node = $call_overpass_node();
-            $call_overpass_way = new GetDataFromOverpass($this->polygon_string, 'marketplace', 'way');
+            $call_overpass_way = new GetDataByPolygonFromOverpass($this->polygon_string, 'marketplace', 'way');
             $marketplaces_way = $call_overpass_way();
             return response()->json(array_merge(
                 json_decode($marketplaces_node->getContent(), true),

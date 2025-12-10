@@ -79,4 +79,83 @@ class GetIsochroneByDuration
 
         return [$polygon_first_string, $polygon_second_string, $polygon_third_string, $polygon_fourth_string];
     }
+
+    public function splitIsochroneInto4(array $rings): array
+    {
+        // Bounding box
+        $xs = array_column($rings, 0);
+        $ys = array_column($rings, 1);
+
+        $minX = min($xs);
+        $maxX = max($xs);
+        $minY = min($ys);
+        $maxY = max($ys);
+
+        $midX = ($minX + $maxX) / 2;
+        $midY = ($minY + $maxY) / 2;
+
+        // Définir les 4 rectangles (xmin, ymin, xmax, ymax)
+        $rects = [
+            [$minX, $minY, $midX, $midY], // bas-gauche
+            [$midX, $minY, $maxX, $midY], // bas-droite
+            [$minX, $midY, $midX, $maxY], // haut-gauche
+            [$midX, $midY, $maxX, $maxY], // haut-droite
+        ];
+
+        $polygons = [];
+
+        foreach ($rects as $rect) {
+            [$rx1, $ry1, $rx2, $ry2] = $rect;
+
+            // Récupérer les points de l'anneau qui sont dans le rectangle
+            $clipped = array_values(array_filter($rings, function ($p) use ($rx1, $ry1, $rx2, $ry2) {
+                return $p[0] >= $rx1 && $p[0] <= $rx2 && $p[1] >= $ry1 && $p[1] <= $ry2;
+            }));
+
+            // On va construire un polygone partant du centre (midX, midY)
+            $center = [$midX, $midY];
+
+            if (!count($clipped)) {
+                // Aucun point de l'isochrone dans le rectangle -> on renvoie le rectangle lui-même
+                $polyPts = [
+                    [$rx1, $ry1],
+                    [$rx2, $ry1],
+                    [$rx2, $ry2],
+                    [$rx1, $ry2],
+                    [$rx1, $ry1],
+                ];
+            } else {
+                // On ajoute le centre + les points triés par angle autour du centre
+                $pts = $clipped;
+
+                // s'assurer qu'on ne duplique pas le centre s'il est déjà présent
+                $hasCenter = false;
+                foreach ($pts as $pt) {
+                    if ($pt[0] == $center[0] && $pt[1] == $center[1]) { $hasCenter = true; break; }
+                }
+
+                // Calculer l'angle de chaque point autour du centre pour trier
+                usort($pts, function($a, $b) use ($center) {
+                    $angA = atan2($a[1] - $center[1], $a[0] - $center[0]);
+                    $angB = atan2($b[1] - $center[1], $b[0] - $center[0]);
+                    if ($angA == $angB) return 0;
+                    return ($angA < $angB) ? -1 : 1;
+                });
+
+                // Construire le polygone en commençant par le centre, puis les points triés, puis retomber sur le centre
+                $polyPts = [];
+                $polyPts[] = $center;
+                foreach ($pts as $p) $polyPts[] = $p;
+                $polyPts[] = $center; // fermer sur le centre (évite WKT invalide si nécessaire)
+            }
+
+            // Convertir en string WKT (POLYGON((x y, ...)))
+            $wktRing = implode(' ', array_map(fn($pt) => $pt[1] . ' ' . $pt[0], $polyPts));
+            $polygons[] = $wktRing;
+        }
+        Log::info('Split isochrone into 4 polygons.');
+        return $polygons;
+    }
+
+
 }
