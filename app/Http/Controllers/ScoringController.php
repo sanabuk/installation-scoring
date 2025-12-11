@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ScoringRequest;
 use App\Jobs\ProcessScoring;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Spatie\LaravelPdf\Facades\Pdf;
@@ -16,10 +16,11 @@ class ScoringController extends Controller
         'AVERAGE_PENSION_TAX' => 26.14
     ];
 
-    public function startScoring(Request $request)
+    public function startScoring(ScoringRequest $request)
     {
-        Log::info('Start scoring request received', ['data' => $request->all()]);
-        ProcessScoring::dispatch($request->input('lon'), $request->input('lat'), $request->input('email'));
+        $validated_datas = $request->validated();
+        Log::info('Start scoring request received', ['data' => $validated_datas]);
+        ProcessScoring::dispatch($validated_datas['lon'], $validated_datas['lat'], $validated_datas['email']);
         return view('thankyou');
     }
 
