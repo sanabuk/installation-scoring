@@ -35,7 +35,11 @@
         <div class="population">
         @foreach ($datas as $city)
             <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
-                <h3>{{ $city->name }} @if(count($city->nearby_organic_vegetable_farms))<span class="icon"><img src="./../img/farmer_icon.png" alt="farmer-icon" title="Maraicher Bio présent sur la commune"></span>@endif @if(count($city->restaurants))<span class="icon"><img src="./../img/restaurant_icon.png" alt="restaurant-icon" title="Restaurant présent sur la commune"></span>@endif @if(count($city->marketplaces))<span class="icon"><img src="./../img/market_icon.png" alt="market-icon" title="Marché présent sur la commune"></span>@endif</h3>
+                <h3>{{ $city->name }}</h3>
+                <div> 
+                  @if(count($city->nearby_organic_vegetable_farms))<span class="icon"><img src="./../img/farmer_icon.png" alt="farmer-icon" title="Maraicher Bio présent sur la commune">x{{ count($city->nearby_organic_vegetable_farms[0]) }}</span>@endif 
+                  @if(count($city->restaurants))<span class="icon"><img src="./../img/restaurant_icon.png" alt="restaurant-icon" title="Restaurant présent sur la commune">x{{ count($city->restaurants[0]) }}</span>@endif 
+                  @if(count($city->marketplaces))<span class="icon"><img src="./../img/market_icon.png" alt="market-icon" title="Marché présent sur la commune">x{{ count($city->marketplaces[0]) }}</span>@endif</div>
                 <ul>
                     <li>Durée : {{ $city->limit_duration/60 }} min</li>
                     <li>Population : {{ $city->population }}</li>
