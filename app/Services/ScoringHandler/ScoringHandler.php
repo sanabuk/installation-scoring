@@ -117,6 +117,7 @@ class ScoringHandler
                 $restaurants = array_merge($restaurants, $new_restaurants);
                 //usleep(50*1000); // To avoid Overpass API rate limit
             }
+            $restaurants = array_values(array_unique($restaurants,SORT_REGULAR));
             Log::info('Restaurants info');
             $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
 
@@ -128,6 +129,7 @@ class ScoringHandler
                 $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
                 //usleep(50*1000);  // To avoid Overpass API rate limit
             }
+            $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
             Log::info('Marketplaces info');
             $_results_with_marketplaces = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
 

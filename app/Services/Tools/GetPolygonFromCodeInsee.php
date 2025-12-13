@@ -24,7 +24,13 @@ class GetPolygonFromCodeInsee
             ])->get($base_url);
 
             $data = $response->json();
-            $data = $data['features'][0]['geometry']['coordinates'][0];
+            //TODO gestion des communes réparties sur plusieurs polygons
+            if(count($data['features'][0]['geometry']['coordinates']) === 1){
+                $data = $data['features'][0]['geometry']['coordinates'][0];
+            } else {
+                $data = $data['features'][0]['geometry']['coordinates'][0][0];
+            }
+            
             return $this->getBoundBox($data);
             // $polygon = [];
             // foreach ($data as $coord) {
@@ -33,7 +39,7 @@ class GetPolygonFromCodeInsee
 
             // return implode(' ', $polygon);
         } catch (\Exception $e) {
-            Log::error('Overpass API from GetDataFromOverpass class: ' . $e->getMessage());
+            Log::error('API gouv get error in GetPolygonFromCodeInsee class: ' . $e->getMessage());
             throw new \Exception('Overpass API request failed with status: ' . $e->getMessage());
         }
     }

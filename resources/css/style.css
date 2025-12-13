@@ -63,7 +63,7 @@ footer{margin-top:40px;padding:28px 0;color:var(--muted);font-size:14px}
 .card-city{border:0px solid var(--soil);margin:1em;padding:0 1em;border-radius: 1em;width: 28%;min-height: 225px;box-shadow: 2px 2px 8px 2px rgba(124,90,58,0.69);}
 .card-city ul{padding:0}
 .card-city li{list-style: none;padding:2px 0;}
-.card-city .confidence-level{font-size: 0.8rem; padding:2px; color:white; border-radius: 5px;}
+.card-city .confidence-level{width: 45px; text-align:center; font-size: 0.8rem; padding:2px; color:white; border-radius: 5px; float: right;}
 .card-city .icon{padding: 0px;}
 .card-city .icon svg{margin-right: 2px;}
 
