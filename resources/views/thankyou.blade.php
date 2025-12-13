@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Merci – Votre étude arrive</title>
-    @vite(['resources/css/style.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Styles de la landing page (simplifiés mais identiques visuellement) -->
     <style>
         /* SECTION MERCI */
