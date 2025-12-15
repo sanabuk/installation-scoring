@@ -16,7 +16,7 @@ class ArrayHydrator
         $indexed = [];
 
         foreach ($json_array as $obj) {
-            $item = $obj->jsonSerialize();
+            $item = is_array($obj) ? $obj : $obj->jsonSerialize();
             if (!isset($item[$compare_key_json])) {
                 continue;
             }

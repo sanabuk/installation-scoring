@@ -29,6 +29,22 @@
       </nav>
     </header>
     <h1>Scoring de votre emplacement</h1>
+    <section id="recap-scoring">
+      <div class="recap-scoring">
+        <div class="parameter">
+          <div>Score d'implantation :</div>
+          <div>72/100</div>
+        </div>
+        <div class="parameter">
+          <div>Demande locale :</div>
+          <div>Forte</div>
+        </div>
+        <div class="parameter">
+          <div>Concurrence :</div>
+          <div>Modérée</div>
+        </div>
+      </div>
+    </section>
     <section>
         <h2>1 - Le bassin de population et sa situation financière</h2>
         <p>La population située à 15 minutes en voiture de votre emplacement s'élève à @php $population = array_reduce($datas, function($carry, $item){return $carry + $item->population;},0); echo($population); @endphp personnes.</p>
@@ -258,9 +274,9 @@
                     <li>Population : {{ $city->population }}</li>
                     <li>Nb de foyers : {{ $city->incoming_tax[0][0]->number_of_taxable_households }}</li>
                     <li>Code insee : {{ $city->code_insee }}</li>
-                    <li>Score foyers imposables : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_percent_taxable_households_color'] }}"> {{ $city->scoring_incoming_tax['scoring_percent_taxable_households'] }}</span></li>
-                    <li>Score salaires : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_average_salary_tax_color'] }}"> {{ $city->scoring_incoming_tax['scoring_average_salary_tax'] }} </span></li>
-                    <li>Score retraites/pensions : <span class="confidence-level" style="background-color: {{ $city->scoring_incoming_tax['scoring_average_pension_tax_color'] }}">{{ $city->scoring_incoming_tax['scoring_average_pension_tax'] }}</span></li>
+                    <li>Score foyers imposables : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households_color }}"> {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households }}</span></li>
+                    <li>Score salaires : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_salary_tax_color }}"> {{ $city->incoming_tax[0][0]->scoring_average_salary_tax }} </span></li>
+                    <li>Score retraites/pensions : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_pension_tax_color }}">{{ $city->incoming_tax[0][0]->scoring_average_pension_tax }}</span></li>
                 </ul>
             </div>
         @endforeach

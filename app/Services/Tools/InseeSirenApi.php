@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Http;
 
 class InseeSirenApi
 {
-    public function getRestaurants($code_insee)
+    public function getCompanies($code_ape, $code_insee)
     {
         $url = "https://api.insee.fr/api-sirene/3.11/siret";
         $query = [
-            'q' => 'activitePrincipaleRegistreMetiersEtablissement:5610C* AND codeCommuneEtablissement:37261',
+            'q' => 'activitePrincipaleRegistreMetiersEtablissement:'.$code_ape.' AND codeCommuneEtablissement:'.$code_insee,
             'nombre' => 100,
             'champs' => 'activitePrincipaleRegistreMetiersEtablissement,denominationUniteLegale,denominationUsuelleEtablissement,numeroVoieEtablissement,typeVoieEtablissement,libelleVoieEtablissement,libelleCommuneEtablissement,codePostalEtablissement,codeCommuneEtablissement',
         ];
@@ -21,6 +21,6 @@ class InseeSirenApi
         ])->get($url,$query);
 
         $data = $response->json();
-        dump($data);
+        return $data;
     }
 }

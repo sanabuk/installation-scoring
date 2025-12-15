@@ -38,6 +38,11 @@ class GetIncomingTax
         ];
     }
 
+    /**
+     * @Deprecated
+     * api.data.gouv ne permet pas d'utiliser leur tabular-api pour les données les plus récentes
+     * Je garde malgré tout l'appel API si jamais la donnée devient disponible
+     */
     private function getByApi(array $parse_code_insee)
     {
         try {

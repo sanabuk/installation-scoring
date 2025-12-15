@@ -67,6 +67,10 @@ footer{margin-top:40px;padding:28px 0;color:var(--muted);font-size:14px}
 .card-city .icon{padding: 0px;}
 .card-city .icon svg{margin-right: 2px;}
 
+/* Recap Global */
+.recap-scoring{width: 40%;padding: 18px}
+.recap-scoring .parameter{display: flex;justify-content:space-between; align-items: center;font-size: large;font-weight: 600;}
+
 /* .pdf{width: 900px;}
 .pdf header{display: none;} */
 
