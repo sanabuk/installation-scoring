@@ -28,7 +28,7 @@ class GetPolygonFromCodeInsee
             if(count($data['features'][0]['geometry']['coordinates']) === 1){
                 $data = $data['features'][0]['geometry']['coordinates'][0];
             } else {
-                $data = $data['features'][0]['geometry']['coordinates'][0];
+                $data = $data['features'][0]['geometry']['coordinates'][0][0];
             }
             
             return $this->getBoundBox($data);

@@ -49,6 +49,7 @@ Pas d'API disponible. Possible de scrapper un site répertoire
 Doc disponible API Meteo France:
   - https://confluence-meteofrance.atlassian.net/wiki/spaces/OpenDataMeteoFrance/pages/854261785/API+Donn+es+Climatologiques
   - https://confluence-meteofrance.atlassian.net/wiki/spaces/OpenDataMeteoFrance/pages/621510657/Donn+es+climatologiques+de+base
+  - https://open-meteo.com/en/docs/historical-weather-api?utm_source=chatgpt.com&latitude=46.2548&longitude=5.2157&hourly=&start_date=2020-01-01&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,daylight_duration,precipitation_sum,rain_sum,snowfall_sum,precipitation_hours,wind_direction_10m_dominant,et0_fao_evapotranspiration,sunshine_duration&timezone=auto&end_date=2025-12-03&bounding_box=-90,-180,90,180
 
 # Recherche population
 Pour récupérer le nombre d'habitants dans un périmètre donné à partir de coordonnées GPS (latitude/longitude) en France, voici une approche technique en Python, en combinant plusieurs API et bibliothèques :
