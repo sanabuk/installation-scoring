@@ -94,4 +94,4 @@ DOC (explorateur) : https://data.ofgl.fr/explore/dataset/ofgl-base-communes-cons
   - % Foyers imposables moyen: 45.29%
   - % Impot moyen revenu salaire : 34.35
   - % Impot moyen revenu retraite/pension : 26.14
-  - Nb Amap référencées sur avenir bio : 2269 => 1/29969 habitants
+  - Nb Amap référencées sur avenir bio : 1912 => 1/35564 habitants
