@@ -4,9 +4,10 @@ Installation-scoring est un outil permettant de définir un score d'installation
 
 Le score est calculé à l'aide de différentes sources de données : 
 
-* data.gouv concernant pour ce qui concerne la population et l'imposition des foyers d'une commune.
-* openstreetmap pour remonter les restaurants et marchés d'une commune.
-* avenir-bio.fr pour remonter les amaps situées sur une commune.
+* [data.gouv.fr](https://data.gouv.fr) pour ce qui concerne la population et l'imposition des foyers d'une commune.
+* [agencebio.org](https://agencebio.org) et son annuaire pour recenser les maraichers bio installés sur une commune. C'est leur bilan de synthèse sur la consommation bio qui m'ont aiguillé pour la réalisation d'un scoring d'installation.
+* [overpass-api](https://wiki.openstreetmap.org/wiki/Overpass_API) basée sur la communauté `openstreetmap` pour remonter les restaurants et marchés d'une commune.
+* [avenir-bio.fr](https://www.avenir-bio.fr) pour remonter les amaps situées sur une commune.
 
 ---
 
@@ -122,6 +123,11 @@ php artisan serve
 
 L'application sera accessible à l'adresse :
 👉 [http://localhost:8000](http://localhost:8000)
+
+```bash
+php artisan queue:work
+```
+⚠️ N'oubliez pas de lancer cette commande pour que le job généré lors d'une demande de scoring soit traité 😉
 
 
 
