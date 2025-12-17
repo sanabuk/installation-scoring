@@ -2,6 +2,7 @@
 
 namespace App\Services\ScoringHandler;
 
+use App\Services\Concurrence\Service\AmapService;
 use App\Services\Concurrence\Service\NearbyFarmService;
 use App\Services\Concurrence\Service\NearbyOrganicVegetableFarmService;
 use App\Services\Finance\DTO\IncomingTaxDTO;
@@ -133,6 +134,13 @@ class ScoringHandler
             Log::info('Marketplaces info');
             $global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
 
+            $amap = [];
+            foreach ($nearbyMunicipalities as $key => $value) {
+                $amap_service = new AmapService();
+                $results = $amap_service->getAmap(substr($value['code_insee'],0,2), strtolower($value['name']));
+                $amap = array_merge($amap, $results);
+            }
+            $global_results = $hydrator->hydrate($global_results, $amap, 'name', 'city', 'amap');
 
             $code_insee = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
             $code_insee_str = $code_insee();
