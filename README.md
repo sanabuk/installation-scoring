@@ -2,11 +2,11 @@
 
 Installation-scoring est un outil permettant de définir un score d'installation à partir des coordonnées géographiques d'un éventuel projet d'installation en maraîchage bio.
 
-Le score est calculé selon différentes données : 
+Le score est calculé à l'aide de différentes sources de données : 
 
-* les données de data.gouv concernant la population et l'imposition des foyers d'une commune.
-* les données de openstreetmap permettant de remonter les restaurants et marchés d'une commune.
-* les données de avenir-bio.fr pour remonter les amaps d'une communes.
+* data.gouv concernant pour ce qui concerne la population et l'imposition des foyers d'une commune.
+* openstreetmap pour remonter les restaurants et marchés d'une commune.
+* avenir-bio.fr pour remonter les amaps situées sur une commune.
 
 ---
 
@@ -26,8 +26,8 @@ Le projet est développé à partir du framework Laravel 12. Avant de commencer,
 1. **Cloner le dépôt**
 
 ```bash
-git clone <url-du-repository>
-cd <nom-du-projet>
+git clone git@github.com:sanabuk/installation-scoring.git
+cd installation-scoring
 ```
 
 2. **Installer les dépendances JS**
@@ -81,9 +81,21 @@ L'API OpenRouteservice permet de récupérer gratuitement les polygons isochrone
 
 ## 🗄️ Base de données
 
+Le projet utilise le système de Jobs/Queues de Laravel. Vous aurez donc besoin d'exécuter un :
+
+```bash
+php artisan migrate
+```
+
+afin de créer les tables nécessaires. J'ai pris le parti pris de ne pas supprimer la création des tables de base d'un projet Laravel de base (Users...).
+
 1. 🛠️ Commande Artisan spécifique
 
-Le projet inclut une commande Artisan personnalisée permettant de récupérer les AMAPs depuis le site **avenir-bio.fr**.
+De base, le projet contient 2 fichiers csv que vous retrouvez dans le dossier `/storage/app/private`.
+
+L'un contenant les informations concernant l'imposition sur le revenu des foyers selon une commune. Ce fichier s'appelle `incoming_tax_2023.csv`. Vous pouvez télécharger ces informations à cette adresse : [https://www.data.gouv.fr/datasets/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/](https://www.data.gouv.fr/datasets/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/). J'ai transformé le fichier .xls de base en fichier .csv avec les informations dont j'avais besoin.
+
+L'autre fichier `amap.csv` reprend les amaps répertoriées par le site [**avenir-bio.fr**](https://www.avenir-bio.fr). Ce fichier a été généré par une commande artisan que vous pouvez utiliser pour mettre le fichier à jour.
 
 ### ▶️ Exécution de la commande
 
@@ -93,9 +105,7 @@ php artisan scrap:amap
 
 ### 📄 Résultat
 
-* Cette commande génère un fichier **`amap.csv`** dans le dossier `/storage/private`
-* Le fichier contient la liste des AMAPs répertoriées sur le site **avenir-bio.fr**
-* Le fichier est automatiquement créé lors de l'exécution de la commande
+* Cette commande vous regénère un fichier à jour **`amap.csv`** dans le dossier `/storage/private` du projet. Selon votre connexion elle pourra prendre plus ou moins de temps à se terminer (< 1 minute).
 
 ---
 
@@ -135,6 +145,6 @@ storage/logs/laravel.log
 
 ## 🧑‍💻 Auteur / Contribution
 
-N'hésitez pas à adapter ce fichier selon les besoins spécifiques du projet (tests, seeders, front-end, CI/CD, etc.).
+N'hésitez pas à adapter ce projet selon vos besoins spécifiques (tests, seeders, front-end, CI/CD, etc.).
 
 Bon développement ! 🚀
