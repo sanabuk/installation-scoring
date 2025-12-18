@@ -2,6 +2,7 @@
 
 namespace App\Services\ScoringHandler;
 
+use App\Mail\ScoringGenerated;
 use App\Services\Concurrence\Service\AmapService;
 use App\Services\Concurrence\Service\NearbyFarmService;
 use App\Services\Concurrence\Service\NearbyOrganicVegetableFarmService;
@@ -16,6 +17,7 @@ use App\Services\Tools\GetPolygonFromCodeInsee;
 use App\Services\Tourism\Service\MarketplaceService;
 use App\Services\Tourism\Service\RestaurantService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ScoringHandler
@@ -79,23 +81,23 @@ class ScoringHandler
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
             dump($codes_insee_array);
 
-            $nearbyFarmService = new NearbyFarmService();
-            $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
-            Log::info('Nearby farms');
-            $_results = $hydrator->hydrate($nearbyMunicipalities, $nearbyFarms, 'code_insee', 'code_insee', 'nearby_farms');
+            // $nearbyFarmService = new NearbyFarmService();
+            // $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
+            // Log::info('Nearby farms');
+            // $_results = $hydrator->hydrate($nearbyMunicipalities, $nearbyFarms, 'code_insee', 'code_insee', 'nearby_farms');
             // dump($_results);
 
             $nearbyOrganicVegetableFarmService = new NearbyOrganicVegetableFarmService();
             $nearbyOrganicVegetableFarms = $nearbyOrganicVegetableFarmService->getNearbyOrganicVegetableFarms($this->lat, $this->lon, 15);
             $nearbyOrganicVegetableFarms = array_values(array_unique($nearbyOrganicVegetableFarms, SORT_REGULAR));
             Log::info('Nearby organic vegetable farms');
-            $_results_with_organic_farms = $hydrator->hydrate($_results, $nearbyOrganicVegetableFarms, 'code_insee', 'code_insee', 'nearby_organic_vegetable_farms');
+            $_results_with_organic_farms = $hydrator->hydrate($nearbyMunicipalities, $nearbyOrganicVegetableFarms, 'code_insee', 'code_insee', 'nearby_organic_vegetable_farms');
             // dump($_results_with_organic_farms);
 
-            $extraTaxService = new ExtraTaxService();
-            $extraTaxInfo = $extraTaxService->getExtraTax($codes_insee_array);
-            Log::info('Extra tax info');
-            $_results_with_extra_tax = $hydrator->hydrate($_results_with_organic_farms, $extraTaxInfo, 'code_insee', 'code_insee', 'extra_tax');
+            // $extraTaxService = new ExtraTaxService();
+            // $extraTaxInfo = $extraTaxService->getExtraTax($codes_insee_array);
+            // Log::info('Extra tax info');
+            // $_results_with_extra_tax = $hydrator->hydrate($_results_with_organic_farms, $extraTaxInfo, 'code_insee', 'code_insee', 'extra_tax');
             // dump($_results_with_extra_tax);
 
             $incomingTaxInfos = [];
@@ -105,7 +107,7 @@ class ScoringHandler
                 $incomingTaxInfos[] = $this->scoringFromIncomingTax($new_incoming_tax);
             }
             Log::info('Incoming tax info');
-            $_results_with_incoming_tax = $hydrator->hydrate($_results_with_extra_tax, $incomingTaxInfos, 'code_insee', 'code_insee', 'incoming_tax');
+            $_results_with_incoming_tax = $hydrator->hydrate($_results_with_organic_farms, $incomingTaxInfos, 'code_insee', 'code_insee', 'incoming_tax');
             // dump($_results_with_incoming_tax);
 
             $restaurants = [];
@@ -142,9 +144,12 @@ class ScoringHandler
             }
             $global_results = $hydrator->hydrate($global_results, $amap, 'name', 'city', 'amap');
 
-            $code_insee = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
-            $code_insee_str = $code_insee();
-            Storage::put('scoring_results_'.$code_insee_str.'_'.$this->email.'.json', json_encode($global_results));
+            $get_code_insee_from_lat_and_lon = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
+            $code_insee = $get_code_insee_from_lat_and_lon();
+            $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);
+            Storage::put($code_insee.'-'.$hash.'.json', json_encode($global_results));
+            $this->sendMail($this->email, $code_insee, $hash);
+            Log::info('Scoring process completed successfully.');
         } catch (\Exception $e) {
             Log::error('Error in ScoringHandler: '.$e);
             throw $e;
@@ -244,5 +249,16 @@ class ScoringHandler
         }
 
         return "rgb($r, $g, $b)";
+    }
+
+    private function generateFilenameFromEmailAndCoordinates(string $email, float $lat, float $lon): string
+    {
+        $string = $email . $lon . $lat . microtime(true);
+        return substr(hash('sha256', $string), 0, 16);
+    }
+
+    public function sendMail(string $email, string $code_insee, string $hash): void
+    {
+        Mail::to($email)->send(new ScoringGenerated(env('APP_URL')."/scoring-result/".$code_insee."/".$hash));
     }
 }

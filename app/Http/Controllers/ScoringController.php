@@ -18,9 +18,9 @@ class ScoringController extends Controller
         return view('thankyou');
     }
 
-    public function getScoringResult($code_insee)
+    public function getScoringResult($code_insee, $hash)
     {
-        $datas = json_decode(Storage::get('scoring_results_'.$code_insee.'_guillaume@test.fr.json'));
+        $datas = json_decode(Storage::get($code_insee.'-'.$hash.'.json'));
         // TODO A mettre à la fin du scoring. PDF mis à cet emplacement à but de configuration.
         //PDF::view('score', ['datas' => $datas,'code_insee' => $code_insee])->landscape()->disk('local')->save($code_insee.'.pdf');
         return view('score', ['datas' => $datas,'code_insee' => $code_insee]);
