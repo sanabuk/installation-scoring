@@ -134,7 +134,7 @@ class ScoringHandler
             }
             $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
             Log::info('Marketplaces info');
-            $global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
+            $_global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
 
             $amap = [];
             foreach ($nearbyMunicipalities as $key => $value) {
@@ -142,10 +142,18 @@ class ScoringHandler
                 $results = $amap_service->getAmap(substr($value['code_insee'],0,2), strtolower($value['name']));
                 $amap = array_merge($amap, $results);
             }
-            $global_results = $hydrator->hydrate($global_results, $amap, 'name', 'city', 'amap');
+            $global_results['cities'] = $hydrator->hydrate($_global_results, $amap, 'name', 'city', 'amap');
+
+            $global_results['scoring']['population_totale'] = array_reduce($global_results['cities'], function ($carry, $item) {
+                return $carry + ($item['population'] ?? 0);
+            }, 0);
+
+            $global_results['scoring']['demande_locale'] = $this->getScoreDemandeLocale($global_results['cities']);
+
+            $global_results['scoring']['concurrence'] = $this->getScoreConcurrence($global_results['scoring']['population_totale'], $global_results['cities']);
 
             $get_code_insee_from_lat_and_lon = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
-            $code_insee = $get_code_insee_from_lat_and_lon();
+            $code_insee = $get_code_insee_from_lat_and_lon() ?? 'unknown';
             $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);
             Storage::put($code_insee.'-'.$hash.'.json', json_encode($global_results));
             $this->sendMail($this->email, $code_insee, $hash);
@@ -199,7 +207,7 @@ class ScoringHandler
         $average_pension_tax = $incomingTaxDTO->getNumberOfHouseholdsTaxedOnPension() !== 0 ? $incomingTaxDTO->getAmountByPension()/$incomingTaxDTO->getNumberOfHouseholdsTaxedOnPension(): 0;
         $scoring_average_pension_tax = ($average_pension_tax / self::INCOMING_TAX_SCORING_THRESHOLDS['AVERAGE_PENSION_TAX']) * 100;
         $scoring_incoming_tax = round(($scoring_percent_taxable_households + $scoring_average_salary_tax + $scoring_average_pension_tax) / 3,2);
-        return [
+        $incoming_tax = [
             'number_of_taxable_households' => $incomingTaxDTO->getNumberOfTaxableHouseholds(),
             'scoring_percent_taxable_households' => round($scoring_percent_taxable_households,2),
             'scoring_percent_taxable_households_color' => $this->colorFromScore(round($scoring_percent_taxable_households,2)),
@@ -211,6 +219,7 @@ class ScoringHandler
             'scoring_incoming_tax_color' => $this->colorFromScore($scoring_incoming_tax),
             'code_insee' => $incomingTaxDTO->getCodeInsee()
         ];
+        return $incoming_tax;
     }
 
     private function colorFromScore(float $score): string
@@ -258,8 +267,54 @@ class ScoringHandler
         return substr(hash('sha256', $string), 0, 16);
     }
 
-    public function sendMail(string $email, string $code_insee, string $hash): void
+    public function sendMail(string $email, ?string $code_insee, ?string $hash): void
     {
+        $code_insee = $code_insee ?? 'unknown';
         Mail::to($email)->send(new ScoringGenerated(env('APP_URL')."/scoring-result/".$code_insee."/".$hash));
+    }
+
+    private function getScoreDemandeLocale(array $cities): string
+    {
+        $total_foyers_imposables = 0;
+        $incoming_tax_score_cumulated = 0;
+        foreach ($cities as $city)
+        {
+            $total_foyers_imposables += $city['incoming_tax'][0][0]['number_of_taxable_households'] ?? 0;            
+            $incoming_tax_score_cumulated += $city['incoming_tax'][0][0]['scoring_incoming_tax'] * ($city['incoming_tax'][0][0]['number_of_taxable_households'] ?? 0);
+        }
+        $scoreDemandeLocale = round($incoming_tax_score_cumulated / $total_foyers_imposables, 2);
+        switch($scoreDemandeLocale){
+            case $scoreDemandeLocale >= 100:
+                return 'Excellent : '.$scoreDemandeLocale;
+            case $scoreDemandeLocale >= 90:
+                return 'Bon : '.$scoreDemandeLocale;
+            case $scoreDemandeLocale >= 70:
+                return 'Moyen : '.$scoreDemandeLocale;
+            case $scoreDemandeLocale >= 40:
+                return 'Faible : '.$scoreDemandeLocale;
+            default:
+                return 'Très faible : '.$scoreDemandeLocale;
+        }
+    }
+
+    private function getScoreConcurrence(int $population_totale, array $cities): string
+    {
+        $number_of_nearby_organic_vegetable_farms = 0;
+        foreach ($cities as $city)
+        {
+            $count = count($city['nearby_organic_vegetable_farms']) > 0 ? count($city['nearby_organic_vegetable_farms'][0]) : 0;
+            $number_of_nearby_organic_vegetable_farms += $count;
+        }
+        $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2); //  1 ferme bio pour 4974 habitants
+        switch($ratio){
+            case $ratio >= 1:
+                return 'Forte : '.$ratio;
+            case $ratio >= 0.8:
+                return 'Moyenne : '.$ratio;
+            case $ratio >= 0.5:
+                return 'Faible : '.$ratio;
+            default:
+                return 'Très faible : '.$ratio;
+        }
     }
 }

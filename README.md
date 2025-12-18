@@ -155,16 +155,17 @@ Des ensembles Service/Scraper/DTO sont en place mais pas encore utilisés concr�
 
 Les sujets sur lesquels il faut encore travailler :
 
-    1. Technique : 
-        [] Calcul scoring Global/Demande/Concurrence
-        [] Tests à mettre en place
-        [] Envoi mail lorsque le scoring est généré
-        [] Mise en page pour génération de PDF (laravel-pdf de spatie est toutefois en place)
+1. Technique : 
+    - [/] Calcul scoring Global ~~/Demande/Concurrence~~
+    - [ ] Tests à mettre en place
+    - [X] Envoi mail lorsque le scoring est généré
+    - [ ] Templating mail
+    - [ ] Mise en page pour génération de PDF (laravel-pdf de spatie est toutefois en place)
 
-    2. More data : 
-        [] Historique climat
-        [] Recensement des commerces semis gros type biocoop etc
-        [] Peut être creuser les données sur le tourisme
+2. More data : 
+    - [ ] Historique climat
+    - [ ] Recensement des commerces semis gros type biocoop etc
+    - [ ] Peut être creuser les données sur le tourisme
 
 Le fichier [used-api.md](./used-api.md) contient également des informations complémentaires sur les datas envisageables.
 

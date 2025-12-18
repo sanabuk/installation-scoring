@@ -37,19 +37,19 @@
         </div>
         <div class="parameter">
           <div>Demande locale :</div>
-          <div>Forte</div>
+          <div>{{ $datas->scoring->demande_locale }}</div>
         </div>
         <div class="parameter">
           <div>Concurrence :</div>
-          <div>Modérée</div>
+          <div>{{ $datas->scoring->concurrence }}</div>
         </div>
       </div>
     </section>
     <section>
         <h2>1 - Le bassin de population et sa situation financière</h2>
-        <p>La population située à 15 minutes en voiture de votre emplacement s'élève à @php $population = array_reduce($datas, function($carry, $item){return $carry + $item->population;},0); echo($population); @endphp personnes.</p>
+        <p>La population située à 15 minutes en voiture de votre emplacement s'élève à {{ $datas->scoring->population_totale }} personnes.</p>
         <div class="population">
-        @foreach ($datas as $city)
+        @foreach ($datas->cities as $key => $city)
             <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
                 <h3>{{ $city->name }}</h3>
                 <div> 
