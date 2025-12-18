@@ -156,7 +156,7 @@ Des ensembles Service/Scraper/DTO sont en place mais pas encore utilisés concr�
 Les sujets sur lesquels il faut encore travailler :
 
 1. Technique : 
-    - [/] Calcul scoring Global ~~/Demande/Concurrence~~
+    - [ ] Calcul scoring Global ~~/Demande/Concurrence~~
     - [ ] Tests à mettre en place
     - [X] Envoi mail lorsque le scoring est généré
     - [ ] Templating mail
