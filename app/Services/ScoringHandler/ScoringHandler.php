@@ -191,11 +191,12 @@ class ScoringHandler
 
     private function scoringFromIncomingTax(IncomingTaxDTO $incomingTaxDTO)
     {
-        $percent_taxable_households = $incomingTaxDTO->getNumberOfTaxedHouseholds()/$incomingTaxDTO->getNumberOfTaxableHouseholds() * 100;
+
+        $percent_taxable_households = $incomingTaxDTO->getNumberOfTaxableHouseholds() !== 0 ? $incomingTaxDTO->getNumberOfTaxedHouseholds()/$incomingTaxDTO->getNumberOfTaxableHouseholds() * 100: 0;
         $scoring_percent_taxable_households = ($percent_taxable_households / self::INCOMING_TAX_SCORING_THRESHOLDS['TAXABLE_HOUSEHOLDS_PERCENT']) * 100;
-        $average_salary_tax = $incomingTaxDTO->getAmountBySalary()/$incomingTaxDTO->getNumberOfHouseholdsTaxedOnSalary();
+        $average_salary_tax = $incomingTaxDTO->getNumberOfHouseholdsTaxedOnSalary() !== 0 ? $incomingTaxDTO->getAmountBySalary()/$incomingTaxDTO->getNumberOfHouseholdsTaxedOnSalary(): 0;
         $scoring_average_salary_tax = ($average_salary_tax / self::INCOMING_TAX_SCORING_THRESHOLDS['AVERAGE_SALARY_TAX']) * 100;
-        $average_pension_tax = $incomingTaxDTO->getAmountByPension()/$incomingTaxDTO->getNumberOfHouseholdsTaxedOnPension();
+        $average_pension_tax = $incomingTaxDTO->getNumberOfHouseholdsTaxedOnPension() !== 0 ? $incomingTaxDTO->getAmountByPension()/$incomingTaxDTO->getNumberOfHouseholdsTaxedOnPension(): 0;
         $scoring_average_pension_tax = ($average_pension_tax / self::INCOMING_TAX_SCORING_THRESHOLDS['AVERAGE_PENSION_TAX']) * 100;
         $scoring_incoming_tax = round(($scoring_percent_taxable_households + $scoring_average_salary_tax + $scoring_average_pension_tax) / 3,2);
         return [

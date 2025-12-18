@@ -25,7 +25,7 @@ class GetPolygonFromCodeInsee
 
             $data = $response->json();
             //TODO gestion des communes réparties sur plusieurs polygons
-            if(count($data['features'][0]['geometry']['coordinates']) === 1){
+            if($data['features'][0]['geometry']['type'] === 'Polygon'){
                 $data = $data['features'][0]['geometry']['coordinates'][0];
             } else {
                 $data = $data['features'][0]['geometry']['coordinates'][0][0];
