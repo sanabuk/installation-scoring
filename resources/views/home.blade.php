@@ -23,7 +23,7 @@
       </div>
 
       <nav>
-        <a class="btn-ghost">Fonctionnalités</a>
+        {{-- <a class="btn-ghost">Fonctionnalités</a> --}}
         {{-- <a class="btn-ghost">Tarifs</a>
         <a class="btn-ghost">Témoignages</a> --}}
         <a class="btn-primary" href="#Essayer">Essayer gratuitement</a>
@@ -49,18 +49,18 @@
             <div><strong>Analyses automatiques</strong><div style="font-size:13px;color:var(--muted)">Rapports prêts à l'emploi</div></div>
           </div>
 
-          <div class="feature">
+          {{-- <div class="feature">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             <div><strong>Visualisation cartographique</strong><div style="font-size:13px;color:var(--muted)">Risques & opportunités</div></div>
-          </div>
+          </div> --}}
         </div>
 
         <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
           <button class="btn-primary">Commencer l'analyse gratuite</button>
-          <a href="#how" style="color:var(--muted);text-decoration:underline">Voir comment ça marche</a>
+          {{-- <a href="#how" style="color:var(--muted);text-decoration:underline">Voir comment ça marche</a> --}}
         </div>
 
-        <div style="display:flex;gap:18px;margin-top:20px;align-items:center">
+        {{-- <div style="display:flex;gap:18px;margin-top:20px;align-items:center">
           <div class="kpi">
             <div>
               <strong>+120</strong>
@@ -74,12 +74,12 @@
               <small>projets facilités</small>
             </div>
           </div>
-        </div>
+        </div> --}}
       </div>
 
       <aside class="card-aside">
         <h3>Tableau de bord — aperçu</h3>
-        <p style="color:var(--muted)">Un tableau de bord clair présente : score d'implantation, concurrence, carte de chaleur, demande locale et recommandations.</p>
+        <p style="color:var(--muted)">Un tableau de bord clair présente : score d'implantation, concurrence, demande locale et une fiche de renseignement des communes proches de votre emplacement.</p>
 
         <div style="margin-top:18px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -98,9 +98,11 @@
           </div>
         </div>
 
-        <div style="margin-top:18px">
+        <img style="display:block; margin:18px auto;" src="./img/fiche_commune.png" alt="fiche exemple">
+
+        {{-- <div style="margin-top:18px">
           <small style="color:var(--muted)">Export PDF • Rapport complet • Cartes imprimables</small>
-        </div>
+        </div> --}}
       </aside>
     </section>
 
@@ -195,13 +197,13 @@
         <h3 style="color:var(--soil)">Ce que vous obtenez</h3>
         <ul style="color:var(--muted);line-height:1.8;margin-top:10px">
           <li>Score d'implantation et rapport PDF</li>
-          <li>Cartes interactives et exportables</li>
+          {{-- <li>Cartes interactives et exportables</li> --}}
           <li>Analyse de la concurrence et segmentation clients</li>
           <li>Checklists opérationnelles et estimations de coûts</li>
         </ul>
       </div>
 
-      <div>
+      {{-- <div>
         <h3 style="color:var(--soil)">Témoignages</h3>
         <div class="testimonial" style="margin-top:12px">
           <strong>Anaïs, porteuse de projet</strong>
@@ -212,13 +214,13 @@
           <strong>Julien, maraîcher</strong>
           <p style="margin:6px 0;color:var(--muted)">"Les cartes de chaleur et le scoring m'ont aidé à prioriser des parcelles et optimiser la logistique."</p>
         </div>
-      </div>
+      </div> --}}
     </div>
 
     <footer>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
         <div>© <strong>Installation Scoring</strong> — Tous droits réservés</div>
-        <div style="color:var(--muted)">Contact • Confidentialité • Mentions légales</div>
+        {{-- <div style="color:var(--muted)">Contact • Confidentialité • Mentions légales</div> --}}
       </div>
     </footer>
 

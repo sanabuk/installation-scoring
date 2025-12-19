@@ -22,19 +22,19 @@
       </div>
 
       <nav>
-        <a class="btn-ghost">Fonctionnalités</a>
+        {{-- <a class="btn-ghost">Fonctionnalités</a> --}}
         {{-- <a class="btn-ghost">Tarifs</a>
         <a class="btn-ghost">Témoignages</a> --}}
-        <a class="btn-primary" href="#Essayer">Essayer gratuitement</a>
+        {{-- <a class="btn-primary" href="#Essayer">Essayer gratuitement</a> --}}
       </nav>
     </header>
     <h1>Scoring de votre emplacement</h1>
     <section id="recap-scoring">
       <div class="recap-scoring">
-        <div class="parameter">
+        {{-- <div class="parameter">
           <div>Score d'implantation :</div>
           <div>72/100</div>
-        </div>
+        </div> --}}
         <div class="parameter">
           <div>Demande locale :</div>
           <div>{{ $datas->scoring->demande_locale }}</div>
@@ -356,10 +356,10 @@
                   @endif
                 </div>
                 <ul>
-                    <li>Durée : {{ $city->limit_duration/60 }} min</li>
+                    <li>Distance : {{ $city->limit_duration/60 }} min</li>
                     <li>Population : {{ $city->population }}</li>
                     <li>Nb de foyers : {{ $city->incoming_tax[0][0]->number_of_taxable_households }}</li>
-                    <li>Code insee : {{ $city->code_insee }}</li>
+                    {{-- <li>Code insee : {{ $city->code_insee }}</li> --}}
                     <li>Score foyers imposables : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households_color }}"> {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households }}</span></li>
                     <li>Score salaires : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_salary_tax_color }}"> {{ $city->incoming_tax[0][0]->scoring_average_salary_tax }} </span></li>
                     <li>Score retraites/pensions : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_pension_tax_color }}">{{ $city->incoming_tax[0][0]->scoring_average_pension_tax }}</span></li>

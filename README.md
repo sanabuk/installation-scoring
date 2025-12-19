@@ -78,11 +78,15 @@ OPEN_ROUTE_SERVICE_API_KEY=your_api_key_here
 
 L'API OpenRouteservice permet de récupérer gratuitement les polygons isochrones (à 5, 10 et 15 minutes) autour de l'emplacement interrogé.
 
+### 📧 Gestion des mails
+
+Le lien des rapports étant envoyé par mail, en développement, je recommande l'utilisation d'un service tel que [mailtrap](https://mailtrap.io) ou autre. Là encore il vous faudra mettre à jour votre fichier `.env`
+
 ---
 
 ## 🗄️ Base de données
 
-Le projet utilise le système de Jobs/Queues de Laravel. Vous aurez donc besoin d'exécuter un :
+De base, le projet utilise SQLite mais si vous souhaitez utiliser un autre SGBD, vous pouvez modifier cela dans le fichier `.env`. Le projet utilise le système de Jobs/Queues de Laravel. Vous aurez donc besoin d'exécuter un :
 
 ```bash
 php artisan migrate
@@ -90,13 +94,13 @@ php artisan migrate
 
 afin de créer les tables nécessaires. J'ai pris le parti pris de ne pas supprimer la création des tables de base d'un projet Laravel de base (Users...).
 
-1. 🛠️ Commande Artisan spécifique
-
 De base, le projet contient 2 fichiers csv que vous retrouvez dans le dossier `/storage/app/private`.
 
 L'un contenant les informations concernant l'imposition sur le revenu des foyers selon une commune. Ce fichier s'appelle `incoming_tax_2023.csv`. Vous pouvez télécharger ces informations à cette adresse : [https://www.data.gouv.fr/datasets/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/](https://www.data.gouv.fr/datasets/limpot-sur-le-revenu-par-collectivite-territoriale-ircom/). J'ai transformé le fichier .xls de base en fichier .csv avec les informations dont j'avais besoin.
 
 L'autre fichier `amap.csv` reprend les amaps répertoriées par le site [**avenir-bio.fr**](https://www.avenir-bio.fr). Ce fichier a été généré par une commande artisan que vous pouvez utiliser pour mettre le fichier à jour.
+
+1. 🛠️ Commande Artisan spécifique
 
 ### ▶️ Exécution de la commande
 
