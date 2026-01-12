@@ -2,7 +2,7 @@
 
 namespace App\Services\ScoringHandler;
 
-use App\Mail\ScoringGenerated;
+use App\Mail\ScoringReadyMail;
 use App\Services\Concurrence\Service\AmapService;
 use App\Services\Concurrence\Service\NearbyFarmService;
 use App\Services\Concurrence\Service\NearbyOrganicVegetableFarmService;
@@ -270,7 +270,7 @@ class ScoringHandler
     public function sendMail(string $email, ?string $code_insee, ?string $hash): void
     {
         $code_insee = $code_insee ?? 'unknown';
-        Mail::to($email)->send(new ScoringGenerated(env('APP_URL')."/scoring-result/".$code_insee."/".$hash));
+        Mail::to($email)->send(new ScoringReadyMail(env('APP_URL')."/scoring-result/".$code_insee."/".$hash));
     }
 
     private function getScoreDemandeLocale(array $cities): string
