@@ -13,7 +13,7 @@ class NearbyOrganicVegetableFarmService
     public function getNearbyOrganicVegetableFarms(float $lat,float $lon,?int $radius): array
     {
         try {
-            $scraper = new GetNearbyOrganicVegetableFarms($lat, $lon, $radius);
+            $scraper = $this->createScraper($lat, $lon, $radius);;
             $response = $scraper();
             $data = json_decode($response->getContent(), true);
             
@@ -72,7 +72,12 @@ class NearbyOrganicVegetableFarmService
         return $nearbyOrganicVegetableFarmDTO;
     }
 
-    private function getCodeInseeFromLatAndLon(float $lat, float $lon): ?string
+    protected function createScraper(float $lat, float $lon, ?int $radius): GetNearbyOrganicVegetableFarms
+    {
+        return new GetNearbyOrganicVegetableFarms($lat, $lon, $radius);
+    }
+
+    protected function getCodeInseeFromLatAndLon(float $lat, float $lon): ?string
     {
         $tool = new GetCodeInseeFromLatAndLon((string)$lat, (string)$lon);
         return $tool();

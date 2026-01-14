@@ -8,29 +8,29 @@ use stdClass;
 class NearbyOrganicVegetableFarmDTO implements \JsonSerializable
 {
     protected string $name;
-    protected ?string $name_annuaire;
+    protected ?string $name_annuaire = null;
     protected string $siret;
-    protected DateTime|null $date_premier_engagement;
-    protected ?string $phone1;
-    protected ?string $phone2;
-    protected ?string $responsable;
-    protected ?string $address1;
-    protected ?string $zipcode1;
-    protected ?string $city1;
-    protected ?string $address2;
-    protected ?string $zipcode2;
-    protected ?string $city2;
-    protected ?string $url;
-    protected ?float $lon;
-    protected ?float $lat;
-    protected ?bool $vente_pros_gros;
-    protected ?bool $vente_pros_details;
-    protected ?bool $vente_particuliers;
-    protected ?bool $vente_resto_collective;
-    protected ?bool $vente_resto_activity;
-    protected stdClass $horaires;
-    protected ?float $distance;
-    protected ?string $code_insee;
+    protected ?DateTime $date_premier_engagement = null;
+    protected ?string $phone1 = null;
+    protected ?string $phone2 = null;
+    protected ?string $responsable = null;
+    protected ?string $address1 = null;
+    protected ?string $zipcode1 = null;
+    protected ?string $city1 = null;
+    protected ?string $address2 = null;
+    protected ?string $zipcode2 = null;
+    protected ?string $city2 = null;
+    protected ?string $url = null;
+    protected ?float $lon = null;
+    protected ?float $lat = null;
+    protected ?bool $vente_pros_gros = null;
+    protected ?bool $vente_pros_details = null;
+    protected ?bool $vente_particuliers = null;
+    protected ?bool $vente_resto_collective = null;
+    protected ?bool $vente_resto_activity = null;
+    protected ?stdClass $horaires = null;
+    protected ?float $distance = null;
+    protected ?string $code_insee = null;
 
     public function jsonSerialize(): array
     {
