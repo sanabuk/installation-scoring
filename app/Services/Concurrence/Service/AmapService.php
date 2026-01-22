@@ -11,7 +11,7 @@ class AmapService
     public function getAmap(string $departement_code, string $city_name)
     {
         try {
-            $amapFromCsv = new GetAmap($departement_code, $city_name);
+            $amapFromCsv = $this->createGetAmap($departement_code, $city_name);
             $raws_datas = $amapFromCsv();
             return $this->mapToAmapDTO($raws_datas);
         } catch (\Exception $e) {
@@ -20,7 +20,12 @@ class AmapService
         }
     }
 
-    private function mapToAmapDTO($rawDatas)
+    protected function createGetAmap(string $departement_code, string $city_name): GetAmap
+    {
+        return new GetAmap($departement_code, $city_name);
+    }
+
+    protected function mapToAmapDTO($rawDatas)
     {
         try {
             $amap_list = [];

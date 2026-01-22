@@ -11,7 +11,7 @@ class IncomingTaxService
     public function getIncomingTax(string $code_insee)
     {
         try {
-            $getIncomingTaxFromApi = new GetIncomingTax($code_insee);
+            $getIncomingTaxFromApi = $this->createGetIncomingTax($code_insee);
             $rawDatas = $getIncomingTaxFromApi();
             return $this->mapToIncomingTaxDTO($rawDatas);
         } catch (\Exception $e) {
@@ -21,7 +21,12 @@ class IncomingTaxService
         
     }
 
-    private function mapToIncomingTaxDTO($rawData)
+    protected function createGetIncomingTax(string $code_insee): GetIncomingTax
+    {
+        return new GetIncomingTax($code_insee);
+    }
+
+    protected function mapToIncomingTaxDTO($rawData)
     {
         try {
             $incomingTaxDTO = new IncomingTaxDTO;

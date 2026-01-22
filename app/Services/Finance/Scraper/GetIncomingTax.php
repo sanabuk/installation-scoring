@@ -20,7 +20,8 @@ class GetIncomingTax
     {
         try {
             $parse_code_insee = $this->parseCodeInsee();
-            return $this->getByCsv($parse_code_insee);
+            $result = $this->getByCsv($parse_code_insee);
+            return $this->formatResult($result);
             
         } catch (\Exception $e) {
             Log::error('Error in GetIncomingTax class: ' . $e->getMessage());
@@ -28,7 +29,7 @@ class GetIncomingTax
         }
     }
 
-    private function parseCodeInsee()
+    protected function parseCodeInsee()
     {
         $departement_code = substr($this->code_insee,0,2);
         $city_code = substr($this->code_insee,2);
@@ -57,15 +58,24 @@ class GetIncomingTax
         }        
     }
 
-    private function getByCsv($parse_code_insee)
+    protected function getByCsv($parse_code_insee)
     {
-        $csvQueryService = new CsvQueryService('incoming_tax_2023.csv');
+        $csvQueryService = $this->createCsvQueryService();
         $result = $csvQueryService
             ->where('Dép.', $parse_code_insee['departement_code']."0")
             ->where('Commune', $parse_code_insee['city_code'])
             ->where('Revenu fiscal de référence par tranche (en euros)', 'Total')
             ->get()
-            ->first();
+            ->first();        
+        return $result;
+    }
+
+    private function formatResult($result)
+    {
+        if (!$result) {
+            throw new \Exception("No data found for code insee: " . $this->code_insee);
+        }
+
         $result['Unnamed: 2'] = $result['Libellé de la commune'];
         $result['Unnamed: 4'] = $result['Nombre de foyers fiscaux'];
         $result['Unnamed: 7'] = $result['Nombre de foyers fiscaux imposés'];
@@ -74,11 +84,12 @@ class GetIncomingTax
         $result['Unnamed: 11'] = $result['Retraites nombres'];
         $result['Unnamed: 12'] = $result['Retraites montants'];
         $result['codeinsee'] = $this->code_insee;
-        
-        if (!$result) {
-            throw new \Exception("No data found for code insee: " . $this->code_insee);
-        }
-        
+
         return $result;
+    }
+
+    protected function createCsvQueryService()
+    {
+        return new CsvQueryService('incoming_tax_2023.csv');
     }
 }
