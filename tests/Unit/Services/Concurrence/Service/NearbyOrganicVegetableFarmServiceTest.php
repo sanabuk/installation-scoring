@@ -82,4 +82,10 @@ class NearbyOrganicVegetableFarmServiceTest extends TestCase
         $this->assertEquals('75056', $result[0]->getCodeInsee());
     }
 
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
 }
