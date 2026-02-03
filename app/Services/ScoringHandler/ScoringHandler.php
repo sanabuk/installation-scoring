@@ -10,6 +10,7 @@ use App\Services\Finance\DTO\IncomingTaxDTO;
 use App\Services\Finance\Service\ExtraTaxService;
 use App\Services\Finance\Service\IncomingTaxService;
 use App\Services\Geographic\Scraper\GetNearbyCitiesByDuration;
+use App\Services\Geographic\Service\WeatherService;
 use App\Services\Tools\ArrayHydrator;
 use App\Services\Tools\GetCodeInseeFromLatAndLon;
 use App\Services\Tools\GetIsochroneByDuration;
@@ -154,8 +155,14 @@ class ScoringHandler
 
             $get_code_insee_from_lat_and_lon = new GetCodeInseeFromLatAndLon((string)$this->lat, (string)$this->lon);
             $code_insee = $get_code_insee_from_lat_and_lon() ?? 'unknown';
-            $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);
+
+            $weather_service = new WeatherService();
+            $climate_datas = $weather_service->getWeatherData($this->lat, $this->lon);
+            $global_results['weather'] = $climate_datas;
+
+            $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);  
             Storage::put($code_insee.'-'.$hash.'.json', json_encode($global_results));
+                      
             $this->sendMail($this->email, $code_insee, $hash);
             Log::info('Scoring process completed successfully.');
         } catch (\Exception $e) {

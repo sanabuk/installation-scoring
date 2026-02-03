@@ -43,10 +43,38 @@
           <div>Concurrence :</div>
           <div>{{ $datas->scoring->concurrence }}</div>
         </div>
+        
       </div>
+      
     </section>
     <section>
-        <h2>1 - Le bassin de population et sa situation financière</h2>
+        <h2>1- Les indicateurs climatiques</h2>
+        <p>Les indicateurs climatiques sont calculés sur la base des 5 dernières années. Les données proviennent de l'api de open-meteo.com</p>
+        <ul>
+          <li>Cumul températures par an: {{ $datas->weather->indicators->degree_days_per_year }}</li>
+          <li>Jours de gel par an: {{ $datas->weather->indicators->frost_days_per_year }}</li>
+          <li>Jours de fortes chaleur par an: {{ $datas->weather->indicators->hot_days_per_year }}</li>
+          <li>Cumul pluviométrie par an: {{ $datas->weather->indicators->rain_mm_per_year }} mm</li>
+          <li>Nombres de jours consécutifs sans précipitations (< 1mm): {{ $datas->weather->indicators->max_dry_days }} </li>
+          <li>Nombres de jours avec fortes précipitations par an (> 20mm): {{ $datas->weather->indicators->heavy_rain_days_per_year }} </li>
+          <li>Heures d'ensoleillement par an: {{ $datas->weather->indicators->sunshine_hours_per_year }}</li>
+          <li>Amplitude thermique: {{ $datas->weather->indicators->thermal_amplitude }}°C</li>
+          <li>Ratio d'instabilité: {{ $datas->weather->indicators->unstable_ratio }}</li>
+        </ul>
+        <p>
+          {!! nl2br(e($datas->weather->commentaries)) !!}
+        </p>
+        <div>
+          <div style="font-size: large; font-weight:600">
+            <div>{{ $datas->weather->globalCommentary }}({{ $datas->weather->globalScore }}/100)</div>
+          </div>
+          <div style="font-size: large; font-weight:600">
+            <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
+          </div>
+        </div>
+    </section>
+    <section>
+        <h2>2 - Le bassin de population et sa situation financière</h2>
         <p>La population située à 15 minutes en voiture de votre emplacement s'élève à {{ $datas->scoring->population_totale }} personnes.</p>
         <div class="population">
         @foreach ($datas->cities as $key => $city)
