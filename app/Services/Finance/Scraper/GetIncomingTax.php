@@ -62,7 +62,7 @@ class GetIncomingTax
     {
         $csvQueryService = $this->createCsvQueryService();
         $result = $csvQueryService
-            ->where('Dép.', $parse_code_insee['departement_code']."0")
+            ->whereLike('Dép.', $parse_code_insee['departement_code']."%")
             ->where('Commune', $parse_code_insee['city_code'])
             ->where('Revenu fiscal de référence par tranche (en euros)', 'Total')
             ->get()

@@ -21,9 +21,28 @@ class CsvQueryService
      */
     public function where(string $column, $value): self
     {
-        $this->filters[] = compact('column', 'value');
+        $this->filters[] = [
+            'type' => 'equals',
+            'column' => $column,
+            'value' => $value,
+        ];
+
         return $this;
     }
+
+
+    public function whereLike(string $column, string $pattern, bool $caseInsensitive = true): self
+    {
+        $this->filters[] = [
+            'type' => 'like',
+            'column' => $column,
+            'pattern' => $pattern,
+            'caseInsensitive' => $caseInsensitive,
+        ];
+
+        return $this;
+    }
+
 
     /**
      * Sélectionner un sous-ensemble de colonnes
@@ -62,8 +81,42 @@ class CsvQueryService
 
                 // Appliquer les filtres where()
                 foreach ($this->filters as $filter) {
-                    if (!isset($assoc[$filter['column']]) || $assoc[$filter['column']] != $filter['value']) {
-                        continue 2; // ignorer la ligne
+                    $column = $filter['column'];
+
+                    if (!isset($assoc[$column])) {
+                        continue 2;
+                    }
+
+                    $cellValue = (string) $assoc[$column];
+
+                    switch ($filter['type']) {
+                        case 'equals':
+                            if ($cellValue != $filter['value']) {
+                                continue 3;
+                            }
+                            break;
+
+                        case 'like':
+                            $cellValue = (string) $assoc[$column];
+                            $pattern   = (string) $filter['pattern'];
+
+                            if ($filter['caseInsensitive']) {
+                                $cellValue = mb_strtolower($cellValue);
+                                $pattern   = mb_strtolower($pattern);
+                            }
+
+                            // Échapper le pattern pour regex
+                            $regex = preg_quote($pattern, '/');
+
+                            // Traduction SQL LIKE → regex
+                            $regex = str_replace('%', '.*', $regex);
+
+                            // Match complet
+                            if (!preg_match('/^' . $regex . '$/u', $cellValue)) {
+                                continue 3; // ⬅️ ligne rejetée
+                            }
+
+                            break;
                     }
                 }
 
