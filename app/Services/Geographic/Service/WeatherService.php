@@ -6,6 +6,7 @@ use App\Services\Geographic\Contract\WeatherServiceInterface;
 use App\Services\Geographic\DTO\WeatherDataDTO;
 use App\Services\Geographic\Scraper\GetWeatherHistoric;
 use Illuminate\Support\Facades\Storage;
+use DatetimeImmutable;
 
 class WeatherService implements WeatherServiceInterface
 {
@@ -41,13 +42,18 @@ class WeatherService implements WeatherServiceInterface
         $indicators = [
             'degree_days_per_year' => $this->degreeDays($daily)/5,
             'frost_days_per_year' => $this->numberOfFrostDays($daily)/5,
+            'late_frost_days_per_year' => $this->numberOfLateFrostDays($daily)/5,
+            'last_frost_date' => $this->lastFrostDate($daily)?->format('Y-m-d'),
+            'last_frost_date_per_year' => $this->lastFrostDatePerYear($daily),
             'hot_days_per_year' => $this->numberOfHotDays($daily)/5,
+            'extreme_heat_days_per_year' => $this->numberOfExtremeHeatDays($daily)/5,
+            'max_consecutive_extreme_heat_days' => $this->maxConsecutiveExtremeHeatDays($daily),
             'rain_mm_per_year' => $this->totalPrecipitation($daily)/5,
             'max_dry_days' => $this->maxConsecutiveDryDays($daily),
             'heavy_rain_days_per_year' => $this->numberOfHeavyRainDays($daily)/5,
-            'sunshine_hours_per_year' => $this->totalSunshineHours($daily)/5,
-            'thermal_amplitude' => $this->meanThermalAmplitude($daily),
-            'unstable_ratio' => $this->unstableWeatherRatio($daily)
+            'sunshine_hours_per_year' => round($this->totalSunshineHours($daily)/5, 2),
+            'thermal_amplitude' => round($this->meanThermalAmplitude($daily), 2),
+            'unstable_ratio' => round($this->unstableWeatherRatio($daily), 2)
         ];
 
         //dump($indicators);
@@ -101,6 +107,94 @@ class WeatherService implements WeatherServiceInterface
         ));
     }
 
+    public function numberOfLateFrostDays(array $daily, string $afterDate = '03-15'): int 
+    {
+        $count = 0;
+
+        foreach ($daily['time'] as $i => $date) {
+            $day = new DateTimeImmutable($date);
+            $threshold = new DateTimeImmutable($day->format('Y') . '-' . $afterDate);
+
+            if ($day >= $threshold && $daily['temperature_2m_min'][$i] < 0.0) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    function lastFrostDate(array $daily): ?DateTimeImmutable
+    {
+        $last = null;
+
+        foreach ($daily['time'] as $i => $date) {
+            if ($daily['temperature_2m_min'][$i] < 0.0) {
+                $last = new DateTimeImmutable($date);
+            }
+        }
+
+        return $last;
+    }
+
+    public function lastFrostDatePerYear(array $daily): array
+    {
+        $lastFrostByYear = [];
+
+        foreach ($daily['time'] as $i => $dateString) {
+            $date = new DateTimeImmutable($dateString);
+            $year = (int) $date->format('Y');
+
+            if ($daily['temperature_2m_min'][$i] < 0.0) {
+                if (
+                    !isset($lastFrostByYear[$year]) ||
+                    $date > $lastFrostByYear[$year]
+                ) {
+                    $lastFrostByYear[$year] = $date;
+                }
+            }
+        }
+
+        ksort($lastFrostByYear);
+
+        return $lastFrostByYear;
+    }
+
+    public function analyzeLateFrosts(array $lastFrostByYear): array
+    {
+        $afterApril15 = 0;
+        $afterMay1 = 0;
+        $afterMay15 = 0;
+        $latestDate = null;
+
+        foreach ($lastFrostByYear as $year => $date) {
+            $monthDay = (int) $date->format('md');
+
+            if ($monthDay >= 415) {
+                $afterApril15++;
+            }
+
+            if ($monthDay >= 501) {
+                $afterMay1++;
+            }
+
+            if ($monthDay >= 515) {
+                $afterMay15++;
+            }
+
+            if ($latestDate === null || $date > $latestDate) {
+                $latestDate = $date;
+            }
+        }
+
+        return [
+            'years_with_frost_after_april_15' => $afterApril15,
+            'years_with_frost_after_may_1' => $afterMay1,
+            'years_with_frost_after_may_15' => $afterMay15,
+            'latest_frost_date_overall' => $latestDate,
+        ];
+    }
+
+
     public function numberOfHotDays(array $daily, float $threshold = 30.0): int
     {
         return count(array_filter(
@@ -108,6 +202,32 @@ class WeatherService implements WeatherServiceInterface
             fn(float $t): bool => $t >= $threshold
         ));
     }
+
+    public function numberOfExtremeHeatDays(array $daily, float $threshold = 35.0): int
+    {
+        return count(array_filter(
+            $daily['temperature_2m_max'],
+            fn(float $t): bool => $t >= $threshold
+        ));
+    }
+
+    public function maxConsecutiveExtremeHeatDays(array $daily, float $threshold = 35.0): int 
+    {
+        $max = 0;
+        $current = 0;
+
+        foreach ($daily['temperature_2m_max'] as $t) {
+            if ($t >= $threshold) {
+                $current++;
+                $max = max($max, $current);
+            } else {
+                $current = 0;
+            }
+        }
+
+        return $max;
+    }
+
 
     public function meanThermalAmplitude(array $daily): float
     {
@@ -339,6 +459,24 @@ class WeatherService implements WeatherServiceInterface
     }
 
     /**
+     * Scoring Late Frosts
+     */
+
+    public function lateFrostRiskIndex(int $yearsWithLateFrost, int $totalYears): string 
+    {
+        $ratio = $yearsWithLateFrost / $totalYears;
+
+        return match (true) {
+            $ratio === 0.0 => 'absent',
+            $ratio <= 0.2 => 'rare',
+            $ratio <= 0.5 => 'occasionnel',
+            $ratio <= 0.8 => 'fréquent',
+            default => 'structurel',
+        };
+    }
+
+
+    /**
      * Overall Weather Score
      */
 
@@ -388,22 +526,122 @@ class WeatherService implements WeatherServiceInterface
         };
     }
 
-    /**
+    public function extremeHeatQualification(int $days35, int $maxStreak): string
+    {
+        return match (true) {
+            $days35 === 0 => 'absente',
+            $days35 <= 5 && $maxStreak <= 2 => 'ponctuelle',
+            $days35 <= 15 || $maxStreak <= 4 => 'significative',
+            default => 'critique',
+        };
+    }
+
+    public function lateFrostQualification(int $lateFrostDays, ?DateTimeImmutable $lastFrost): string 
+    {
+        if ($lateFrostDays === 0) {
+            return 'absent';
+        }
+
+        $monthDay = (int) $lastFrost?->format('md');
+
+        if ($monthDay >= 415) {
+            return 'très tardif';
+        }
+
+        return $lateFrostDays <= 3 ? 'ponctuel' : 'fréquent';
+    }
+
+    public function heatDaysQualification(float $hotDaysPerYear): string
+    {
+        return match (true) {
+            $hotDaysPerYear <= 10 => 'rares',
+            $hotDaysPerYear <= 25 => 'modérées',
+            $hotDaysPerYear <= 40 => 'fréquentes',
+            $hotDaysPerYear <= 60 => 'élevées',
+            default => 'très élevées',
+        };
+    }
+
+     /**
      * Commentaire température
      */
     public function commentTemperature(int $score, float $degreeDays, float $frostDays, float $hotDays): string
     {
         $qualif = $this->qualifyScore($score, 30);
+        $heatQualif = $this->heatDaysQualification($hotDays);
 
         return sprintf(
-            "🌡️ Température : %s. Le cumul de chaleur (%.0f degrés-jours/an) est adapté à une large gamme de cultures. " .
-            "Le gel reste présent (%.0f jours/an) mais globalement maîtrisable, avec peu d'épisodes de forte chaleur (%.0f jours/an).",
+            "🌡️ Température : %s. Le cumul de chaleur est élevé (%.0f degrés-jours/an), " .
+            "indiquant un fort potentiel de production. En revanche, les épisodes de forte chaleur sont %s " .
+            "(%.0f jours ≥ 30 °C/an), ce qui peut générer du stress thermique et nécessiter des adaptations culturales. " .
+            "Le gel reste présent (%.0f jours/an).",
             $qualif,
             $degreeDays,
-            $frostDays,
-            $hotDays
+            $heatQualif,
+            $hotDays,
+            $frostDays
         );
     }
+
+    public function commentExtremeHeat(int $days35, int $maxStreak): string 
+    {
+        $qualif = $this->extremeHeatQualification($days35, $maxStreak);
+
+        return match ($qualif) {
+            'absente' =>
+                "🔥 Chaleurs extrêmes : absentes. Aucun épisode ≥ 35 °C observé.",
+            'ponctuelle' =>
+                "🔥 Chaleurs extrêmes : ponctuelles ($days35 jours ≥ 35 °C). Risque limité.",
+            'significative' =>
+                "🔥 Chaleurs extrêmes : significatives ($days35 jours ≥ 35 °C, jusqu'à $maxStreak jours consécutifs). " .
+                "Un stress thermique est probable pour certaines cultures.",
+            default =>
+                "🔥 Chaleurs extrêmes : critiques ($days35 jours ≥ 35 °C, jusqu'à $maxStreak jours consécutifs). " .
+                "Risque élevé de pertes sans protections adaptées (ombrage, irrigation, choix variétal).",
+        };
+    }
+
+    public function commentLateFrost(int $lateFrostDays, ?DateTimeImmutable $lastFrost): string 
+    {
+        if ($lateFrostDays === 0) {
+            return "❄️ Gels tardifs : absents. Aucun gel observé après le redémarrage végétatif (fixé au 15 mars).";
+        }
+
+        return sprintf(
+            "❄️ Gels tardifs : %s (%d jours après mi-mars). Dernier gel observé le %s. " .
+            "Risque important pour les cultures précoces.",
+            $this->lateFrostQualification($lateFrostDays, $lastFrost),
+            $lateFrostDays,
+            $lastFrost?->format('d/m') ?? '—'
+        );
+    }
+
+    public function commentStructuralLateFrost(array $analysis, int $totalYears): string 
+    {
+        $risk = $this->lateFrostRiskIndex(
+            $analysis['years_with_frost_after_april_15'],
+            $totalYears
+        );
+
+        $latest = $analysis['latest_frost_date_overall']
+            ? $analysis['latest_frost_date_overall']->format('d/m')
+            : '—';
+
+        return match ($risk) {
+            'absent' =>
+                "❄️ Aucun gel observé après le 15 avril sur la période étudiée.",
+            'rare' =>
+                "❄️ Gels tardifs rares (après le 15 avril dans {$analysis['years_with_frost_after_april_15']} année(s) sur $totalYears).",
+            'occasionnel' =>
+                "❄️ Gels tardifs occasionnels (après le 15 avril dans {$analysis['years_with_frost_after_april_15']} année(s) sur $totalYears). Risque à intégrer pour les cultures précoces.",
+            'fréquent' =>
+                "❄️ Gels tardifs fréquents (après le 15 avril dans {$analysis['years_with_frost_after_april_15']} années sur $totalYears). Implantation précoce risquée.",
+            default =>
+                "❄️ Gels tardifs structurels (après le 15 avril dans {$analysis['years_with_frost_after_april_15']} année(s) sur $totalYears). Risque élevé pour cultures précoces ou non protégées.",
+        };
+    }
+
+
 
     /** 
      * Commentaire eau 
@@ -492,6 +730,21 @@ class WeatherService implements WeatherServiceInterface
             $indicators['degree_days_per_year'],
             $indicators['frost_days_per_year'],
             $indicators['hot_days_per_year']
+        );
+
+        $lines[] = $this->commentExtremeHeat(
+            $indicators['extreme_heat_days_per_year'],
+            $indicators['max_consecutive_extreme_heat_days']
+        );
+
+        //  $lines[] = $this->commentLateFrost(
+        //     $indicators['late_frost_days_per_year'],
+        //     $indicators['last_frost_date'] ? new DateTimeImmutable($indicators['last_frost_date']) : null
+        // );
+
+        $lines[] = $this->commentStructuralLateFrost(
+            $this->analyzeLateFrosts($indicators['last_frost_date_per_year']),
+            count($indicators['last_frost_date_per_year'])-1
         );
 
         $lines[] = $this->commentWater(
