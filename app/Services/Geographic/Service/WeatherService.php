@@ -13,15 +13,15 @@ class WeatherService implements WeatherServiceInterface
     /**
      * @return WeatherDataDTO[]
      */
-    public function getWeatherData(float $latitude, float $longitude): array
+    public function getWeatherData(float $latitude, float $longitude, string $hash): array
     {
-        if(Storage::disk('local')->exists("weather_data/weather_{$latitude}_{$longitude}.json")) {
-            $jsonContent = Storage::disk('local')->get("weather_data/weather_{$latitude}_{$longitude}.json");
+        if(Storage::disk('local')->exists("weather_data/weather_{$hash}.json")) {
+            $jsonContent = Storage::disk('local')->get("weather_data/weather_{$hash}.json");
             $weatherDataArray = json_decode($jsonContent, true);
         } else {
             $scraper = new GetWeatherHistoric($latitude, $longitude);
             $weatherDataArray = $scraper();
-            $this->createJsonFile($latitude, $longitude, $weatherDataArray);
+            $this->createJsonFile($hash, $weatherDataArray);
         }
 
         // $weatherDataDTOs = [];
@@ -83,9 +83,9 @@ class WeatherService implements WeatherServiceInterface
         return $climateData;
     }
 
-    protected function createJsonFile(float $latitude, float $longitude, array $data): void
+    protected function createJsonFile(string $hash, array $data): void
     {
-        Storage::disk('local')->put("weather_data/weather_{$latitude}_{$longitude}.json", json_encode($data, JSON_PRETTY_PRINT));
+        Storage::disk('local')->put("weather_data/weather_{$hash}.json", json_encode($data, JSON_PRETTY_PRINT));
     }
 
     /**

@@ -74,7 +74,7 @@
         </div>
 
         <nav>
-            <a class="btn-ghost">Fonctionnalités</a>
+            {{-- <a class="btn-ghost">Fonctionnalités</a> --}}
             {{-- <a class="btn-ghost">Tarifs</a>
             <a class="btn-ghost">Témoignages</a> --}}
             <a class="btn-primary" href="#Essayer">Essayer gratuitement</a>

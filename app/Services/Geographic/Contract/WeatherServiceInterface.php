@@ -9,5 +9,5 @@ Interface WeatherServiceInterface
     /**
      * @return WeatherDataDTO[]
      */
-    public function getWeatherData(float $latitude, float $longitude): array;
+    public function getWeatherData(float $latitude, float $longitude, string $hash): array;
 }

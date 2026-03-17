@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/style.css', 'resources/js/app.js'])
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
 <body>
   <div class="container pdf">
@@ -48,7 +50,7 @@
       
     </section>
     <section>
-        <h2>1- Les indicateurs climatiques</h2>
+        <h2>1 - Les indicateurs climatiques</h2>
         <p>Les indicateurs climatiques sont calculés sur la base des 5 dernières années. Les données proviennent de l'api de open-meteo.com</p>
         <ul>
           <li>Cumul températures par an: {{ $datas->weather->indicators->degree_days_per_year }}</li>
@@ -71,6 +73,13 @@
           <div style="font-size: large; font-weight:600">
             <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
           </div>
+        </div>
+        <div>
+          <h2>Températures</h2>
+          <canvas id="tempChart"></canvas>
+
+          <h2>Précipitations</h2>
+          <canvas id="rainChart"></canvas>
         </div>
     </section>
     <section>
@@ -397,5 +406,132 @@
         </div>
     </section>
   </div>
+  <script>
+    async function loadWeather() {
+
+        const data = @json($weather_datas)
+
+        const labels = data.daily.time;
+
+        const tempMax = data.daily.temperature_2m_max;
+        const tempMin = data.daily.temperature_2m_min;
+        const tempMean = data.daily.temperature_2m_mean;
+        const sunshineDuration = data.daily.sunshine_duration.map(v => v / 3600);
+
+        const rain = data.daily.precipitation_sum;
+
+        // Graphique températures
+
+        new Chart(document.getElementById("tempChart"), {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Température max",
+                        data: tempMax,
+                        borderColor: "red",
+                        fill: false
+                    },
+                    {
+                        label: "Température moyenne",
+                        data: tempMean,
+                        borderColor: "orange",
+                        fill: false
+                    },
+                    {
+                        label: "Température min",
+                        data: tempMin,
+                        borderColor: "blue",
+                        fill: false
+                    },
+                    {
+                        label: "Ensoleillement en heures",
+                        data: sunshineDuration,
+                        borderColor: "gold",
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+
+                plugins: {
+                    zoom: {
+
+                        pan: {
+                            enabled: true,
+                            mode: 'x'
+                        },
+
+                        zoom: {
+                            wheel: {
+                                enabled: true
+                            },
+
+                            pinch: {
+                                enabled: true
+                            },
+
+                            drag: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0,0,0,0.2)'
+                            },
+
+                            mode: 'x'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Graphique pluie
+
+        new Chart(document.getElementById("rainChart"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Précipitations (mm)",
+                        data: rain
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+
+                plugins: {
+                    zoom: {
+
+                        pan: {
+                            enabled: true,
+                            mode: 'x'
+                        },
+
+                        zoom: {
+                            wheel: {
+                                enabled: true
+                            },
+
+                            pinch: {
+                                enabled: true
+                            },
+
+                            drag: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0,0,0,0.2)'
+                            },
+
+                            mode: 'x'
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+    loadWeather();
+  </script>
 </body>
 </html>

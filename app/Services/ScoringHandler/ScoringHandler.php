@@ -157,10 +157,10 @@ class ScoringHandler
             $code_insee = $get_code_insee_from_lat_and_lon() ?? 'unknown';
 
             $weather_service = new WeatherService();
-            $climate_datas = $weather_service->getWeatherData($this->lat, $this->lon);
+            $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);  
+            $climate_datas = $weather_service->getWeatherData($this->lat, $this->lon, $hash);
             $global_results['weather'] = $climate_datas;
 
-            $hash = $this->generateFilenameFromEmailAndCoordinates($this->email, $this->lat, $this->lon);  
             Storage::put($code_insee.'-'.$hash.'.json', json_encode($global_results));
                       
             $this->sendMail($this->email, $code_insee, $hash);

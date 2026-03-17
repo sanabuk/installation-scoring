@@ -128,12 +128,41 @@
     </section>
 
     <!-- CTA -->
-    <section id="Essayer" class="cta">
+    {{-- <section id="Essayer" class="cta">
       <div class="cta-left" style="flex:1">
         <h2>Prêt à valider votre projet ?</h2>
         <p style="margin:0;color:var(--muted)">Choisissez un emplacement sur la carte, renseignez votre email puis recevez sur celui ci votre analyse démo dans quelques instants.</p>
         <div id="map" style="height:300px;margin-top:14px;border-radius:12px;overflow:hidden"></div>
       </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+        <form id="demoForm" method="POST" action="./start-scoring">
+          @csrf
+          <input class="input" id="email" name="email" type="email" placeholder="Votre email" required />
+          <input type="hidden" id="lat" name="lat" required/>
+          <input type="hidden" id="lon" name="lon" required/>
+          <button class="btn-primary" type="submit">Recevoir ma démo</button>
+        </form>
+        <p id="status" style="color:var(--muted);font-size:14px"></p>
+      </div>
+    </section> --}}
+    <section id="Essayer" class="cta">
+      <div class="cta-left" style="flex:1">
+        <h2>Prêt à valider votre projet ?</h2>
+        <p style="margin:0;color:var(--muted)">
+          Choisissez un emplacement sur la carte ou recherchez une adresse.
+        </p>
+
+        <input 
+          type="text" 
+          id="addressSearch" 
+          class="input" 
+          placeholder="Rechercher une ville ou une adresse"
+          style="margin-top:12px"
+        />
+
+        <div id="map" style="height:300px;margin-top:14px;border-radius:12px;overflow:hidden"></div>
+      </div>
+
       <div style="flex:1;display:flex;flex-direction:column;gap:12px">
         <form id="demoForm" method="POST" action="./start-scoring">
           @csrf
