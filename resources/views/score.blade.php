@@ -74,10 +74,11 @@
             <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
           </div>
         </div>
-        <div>
+        <div class="chart-container">
           <h2>Températures</h2>
           <canvas id="tempChart"></canvas>
-
+        </div>
+        <div  class="chart-container">
           <h2>Précipitations</h2>
           <canvas id="rainChart"></canvas>
         </div>
@@ -455,6 +456,12 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
 
                 plugins: {
                     zoom: {
@@ -500,12 +507,18 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
 
                 plugins: {
                     zoom: {
 
                         pan: {
-                            enabled: true,
+                            enabled: false,
                             mode: 'x'
                         },
 
