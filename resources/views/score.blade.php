@@ -75,12 +75,9 @@
           </div>
         </div>
         <div class="chart-container">
-          <h2>Températures</h2>
-          <canvas id="tempChart"></canvas>
-        </div>
-        <div  class="chart-container">
-          <h2>Précipitations</h2>
-          <canvas id="rainChart"></canvas>
+          <h2>Données climatiques</h2>
+          <button onclick="chart.resetZoom()">Reset zoom</button>
+          <canvas id="climateChart"></canvas>
         </div>
     </section>
     <section>
@@ -421,127 +418,130 @@
 
         const rain = data.daily.precipitation_sum;
 
-        // Graphique températures
+        // Graphique climatiques
 
-        new Chart(document.getElementById("tempChart"), {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Température max",
-                        data: tempMax,
-                        borderColor: "red",
-                        fill: false
-                    },
-                    {
-                        label: "Température moyenne",
-                        data: tempMean,
-                        borderColor: "orange",
-                        fill: false
-                    },
-                    {
-                        label: "Température min",
-                        data: tempMin,
-                        borderColor: "blue",
-                        fill: false
-                    },
-                    {
-                        label: "Ensoleillement en heures",
-                        data: sunshineDuration,
-                        borderColor: "gold",
-                        fill: false
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
+        window.chart = new Chart(document.getElementById('climateChart'), {
 
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
+          data: {
+              labels: labels,
+              datasets: [
 
-                plugins: {
-                    zoom: {
+                  {
+                      type: 'line',
+                      label: 'Température moyenne',
+                      data: tempMean,
+                      borderColor: 'orange',
+                      borderWidth: 3,
+                      pointRadius: 0,
+                      yAxisID: 'yTemp'
+                  },
 
-                        pan: {
-                            enabled: true,
-                            mode: 'x'
-                        },
+                  {
+                      type: 'line',
+                      label: 'Température max',
+                      data: tempMax,
+                      borderColor: 'red',
+                      borderWidth: 1.5,
+                      pointRadius: 0,
+                      yAxisID: 'yTemp'
+                  },
 
-                        zoom: {
-                            wheel: {
-                                enabled: true
-                            },
+                  {
+                      type: 'line',
+                      label: 'Température min',
+                      data: tempMin,
+                      borderColor: 'blue',
+                      borderWidth: 1.5,
+                      pointRadius: 0,
+                      yAxisID: 'yTemp'
+                  },
 
-                            pinch: {
-                                enabled: true
-                            },
+                  {
+                      type: 'line',
+                      label: 'Ensoleillement (heures)',
+                      data: sunshineDuration,
+                      borderColor: 'gold',
+                      borderWidth: 1.5,
+                      pointRadius: 0,
+                      yAxisID: 'yTemp'
+                  },
 
-                            drag: {
-                                enabled: true,
-                                backgroundColor: 'rgba(0,0,0,0.2)'
-                            },
+                  {
+                      type: 'bar',
+                      label: 'Précipitations (mm)',
+                      data: rain,
+                      backgroundColor: 'rgba(0,120,255,0.4)',
+                      borderColor: 'rgba(0,120,255,0.8)',
+                      yAxisID: 'yRain'
+                  }
 
-                            mode: 'x'
-                        }
-                    }
-                }
-            }
-        });
+              ]
+          },
 
-        // Graphique pluie
+          options: {
 
-        new Chart(document.getElementById("rainChart"), {
-            type: "bar",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Précipitations (mm)",
-                        data: rain
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
+              responsive: true,
+              maintainAspectRatio: false,
 
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
+              interaction: {
+                  mode: 'index',
+                  intersect: false
+              },
 
-                plugins: {
-                    zoom: {
+              scales: {
 
-                        pan: {
-                            enabled: false,
-                            mode: 'x'
-                        },
+                  yTemp: {
+                      type: 'linear',
+                      position: 'left',
+                      title: {
+                          display: true,
+                          text: 'Température (°C)'
+                      }
+                  },
 
-                        zoom: {
-                            wheel: {
-                                enabled: true
-                            },
+                  yRain: {
+                      type: 'linear',
+                      position: 'right',
+                      title: {
+                          display: true,
+                          text: 'Précipitations (mm)'
+                      },
 
-                            pinch: {
-                                enabled: true
-                            },
+                      grid: {
+                          drawOnChartArea: false
+                      }
+                  }
+              },
 
-                            drag: {
-                                enabled: true,
-                                backgroundColor: 'rgba(0,0,0,0.2)'
-                            },
+              plugins: {
+                  zoom: {
 
-                            mode: 'x'
-                        }
-                    }
-                }
-            }
-        });
+                      pan: {
+                          enabled: true,
+                          mode: 'x'
+                      },
+
+                      zoom: {
+                          wheel: {
+                              enabled: true
+                          },
+
+                          pinch: {
+                              enabled: true
+                          },
+
+                          drag: {
+                              enabled: true,
+                              backgroundColor: 'rgba(0,0,0,0.2)'
+                          },
+
+                          mode: 'x'
+                      }
+                  }
+              }
+          }
+
+      });
 
     }
     loadWeather();
