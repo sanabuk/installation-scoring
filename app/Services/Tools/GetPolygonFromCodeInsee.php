@@ -19,9 +19,16 @@ class GetPolygonFromCodeInsee
         $base_url = "https://geo.api.gouv.fr/communes?code=".$this->code_insee."&format=geojson&geometry=contour";
 
         try {
-            $response = Http::withHeaders([
-            'Content-Type' => 'application/json; charset=utf-8'
-            ])->get($base_url);
+            $response = retry(5,
+                function ($attempt) use ($base_url) {
+                    return Http::withHeaders([
+                        'Content-Type' => 'application/json; charset=utf-8'
+                        ])->get($base_url)->throw();
+                },
+                function ($attempt) {
+                    return 1000*pow(2,$attempt);
+                }
+            );
 
             $data = $response->json();
             //TODO gestion des communes réparties sur plusieurs polygons
@@ -40,7 +47,7 @@ class GetPolygonFromCodeInsee
             // return implode(' ', $polygon);
         } catch (\Exception $e) {
             Log::error('API gouv get error in GetPolygonFromCodeInsee class: ' . $e->getMessage());
-            throw new \Exception('Overpass API request failed with status: ' . $e->getMessage());
+            throw new \Exception('GEO API GOUV for code_insee '.$this->code_insee.' request failed with status: ' . $e->getMessage());
         }
     }
 
