@@ -41,6 +41,8 @@ class GetIsochroneByDuration
             );
             $isochroneData = json_decode($response, true);
             $polygons = $isochroneData['features'];
+            Log::info('Successfully retrieved isochrone data from OpenRouteService API.');
+            Log::debug($isochroneData['features']);
             return $polygons;
         } catch (\Exception $e) {
             Log::error('Error in GetIsochroneByDuration class: ' . $e->getMessage());

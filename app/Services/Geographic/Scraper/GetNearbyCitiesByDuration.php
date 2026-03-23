@@ -55,12 +55,17 @@ class GetNearbyCitiesByDuration
                 out geom;'
             );
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json; charset=utf-8'
-            ])->get($overpass_url,[
-                'data' => $query
-            ]);
-            
+            $response = retry(5,
+                function ($attempts) use ($overpass_url, $query) {
+                    return Http::withHeaders([
+                        'Content-Type' => 'application/json; charset=utf-8'
+                    ])->get($overpass_url,[
+                        'data' => $query
+                    ])->throw();
+                }, function ($attempts) {
+                    return 1000*pow(2,$attempts);  
+                }
+            );
             $data = $response->json();
             $communes = [];
             foreach ($data['elements'] ?? [] as $element) {
