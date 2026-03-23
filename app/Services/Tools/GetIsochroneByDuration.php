@@ -26,13 +26,19 @@ class GetIsochroneByDuration
     {
         try {
             $url = 'https://api.openrouteservice.org/v2/isochrones/' . $this->type_locomotion;
-            $response = Http::withHeaders([
-                'Authorization' => env('OPEN_ROUTE_SERVICE_API_KEY')
-            ])->post($url,[
-                'locations' => [[$this->lon,$this->lat]],
-                'range' => [$this->duration],
-                'interval' => $this->interval
-            ]);
+            $response = retry(5,
+                function ($attempt) use ($url) {
+                    return Http::withHeaders([
+                        'Authorization' => env('OPEN_ROUTE_SERVICE_API_KEY')
+                    ])->post($url,[
+                        'locations' => [[$this->lon,$this->lat]],
+                        'range' => [$this->duration],
+                        'interval' => $this->interval
+                    ])->throw();
+                }, function ($attempt) {
+                    return 1000*pow(2,$attempt);
+                }
+            );
             $isochroneData = json_decode($response, true);
             $polygons = $isochroneData['features'];
             return $polygons;
