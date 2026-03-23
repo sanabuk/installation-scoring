@@ -38,11 +38,11 @@
           <div>72/100</div>
         </div> --}}
         <div class="parameter">
-          <div>Demande locale :</div>
-          <div>{{ $datas->scoring->demande_locale }}</div>
+          <div>Potentiel économique de la population locale : </div>
+          <div> {{ $datas->scoring->demande_locale }}</div>
         </div>
         <div class="parameter">
-          <div>Concurrence :</div>
+          <div>Concurrence : </div>
           <div>{{ $datas->scoring->concurrence }}</div>
         </div>
         
@@ -82,7 +82,7 @@
     </section>
     <section>
         <h2>2 - Le bassin de population et sa situation financière</h2>
-        <p>La population située à 15 minutes en voiture de votre emplacement s'élève à {{ $datas->scoring->population_totale }} personnes.</p>
+        <p>La population située à 10 minutes en voiture de votre emplacement s'élève à {{ $datas->scoring->population_totale }} personnes.</p>
         <div class="population">
         @foreach ($datas->cities as $key => $city)
             <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">

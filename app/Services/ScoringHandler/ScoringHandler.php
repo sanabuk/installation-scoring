@@ -43,9 +43,9 @@ class ScoringHandler
     public function handler()
     {
         try {
-            $hydrator = new ArrayHydrator();
-        
-            $polygonIsochroneService = new GetIsochroneByDuration($this->lat, $this->lon, 15);
+            $hydrator = new ArrayHydrator();   
+            $max_duration = 10;     
+            $polygonIsochroneService = new GetIsochroneByDuration($this->lat, $this->lon, $max_duration);
             $isochrones = $polygonIsochroneService->getIsochrone();
             $nearbyMunicipalities = [];
             foreach ($isochrones as $isochrone_feature) {
@@ -70,6 +70,8 @@ class ScoringHandler
                     $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string, $interval);
                     sleep(1); // To avoid Overpass API rate limit
                     $_cities[] = $scrapNearbyCitiesByDuration();
+                    Log::info('Retrieved nearby cities for interval: ' . $interval);
+                    Log::info($_cities);
                 }
                 if ($interval > 600) {
                     $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1],$_cities[2], $_cities[3]));
@@ -77,7 +79,7 @@ class ScoringHandler
                     $nearbyMunicipalities[] = $_cities[0];
                 }
             }
-            $nearbyMunicipalities = $this->mergeUniqueByKeys(array_merge($nearbyMunicipalities[0], $nearbyMunicipalities[1], $nearbyMunicipalities[2]));
+            $nearbyMunicipalities = $this->mergeUniqueByKeys(array_merge($nearbyMunicipalities[0], $nearbyMunicipalities[1]));
 
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
             dump($codes_insee_array);
@@ -286,21 +288,22 @@ class ScoringHandler
         $incoming_tax_score_cumulated = 0;
         foreach ($cities as $city)
         {
+            $ponderation = round(375/$city['limit_duration'], 2); // Pondération basée sur l'éloignement des populations de la ferme : 1.25 pour 5min, 0.625 pour 10min
             $total_foyers_imposables += $city['incoming_tax'][0][0]['number_of_taxable_households'] ?? 0;            
-            $incoming_tax_score_cumulated += $city['incoming_tax'][0][0]['scoring_incoming_tax'] * ($city['incoming_tax'][0][0]['number_of_taxable_households'] ?? 0);
+            $incoming_tax_score_cumulated += $city['incoming_tax'][0][0]['scoring_incoming_tax'] * ($city['incoming_tax'][0][0]['number_of_taxable_households'] * $ponderation ?? 0);
         }
         $scoreDemandeLocale = round($incoming_tax_score_cumulated / $total_foyers_imposables, 2);
         switch($scoreDemandeLocale){
             case $scoreDemandeLocale >= 100:
-                return 'Excellent : '.$scoreDemandeLocale;
-            case $scoreDemandeLocale >= 90:
-                return 'Bon : '.$scoreDemandeLocale;
-            case $scoreDemandeLocale >= 70:
-                return 'Moyen : '.$scoreDemandeLocale;
-            case $scoreDemandeLocale >= 40:
-                return 'Faible : '.$scoreDemandeLocale;
+                return 'Excellent ('.$scoreDemandeLocale.')';
+            case $scoreDemandeLocale >= 80:
+                return 'Bon ('.$scoreDemandeLocale.')';
+            case $scoreDemandeLocale >= 60:
+                return 'Moyen ('.$scoreDemandeLocale.')';
+            case $scoreDemandeLocale >= 30:
+                return 'Faible ('.$scoreDemandeLocale.')';
             default:
-                return 'Très faible : '.$scoreDemandeLocale;
+                return 'Très faible ('.$scoreDemandeLocale.')';
         }
     }
 
@@ -315,13 +318,13 @@ class ScoringHandler
         $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2); //  1 ferme bio pour 4974 habitants
         switch($ratio){
             case $ratio >= 1:
-                return 'Forte : '.$ratio;
+                return 'Forte ('.$ratio.')';
             case $ratio >= 0.8:
-                return 'Moyenne : '.$ratio;
+                return 'Moyenne ('.$ratio.')';
             case $ratio >= 0.5:
-                return 'Faible : '.$ratio;
+                return 'Faible ('.$ratio.')';
             default:
-                return 'Très faible : '.$ratio;
+                return 'Très faible ('.$ratio.')';
         }
     }
 }

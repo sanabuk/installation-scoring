@@ -77,8 +77,8 @@ footer{margin-top:40px;padding:28px 0;color:var(--muted);font-size:14px}
 }
 
 /* Recap Global */
-.recap-scoring{width: 40%;padding: 18px}
-.recap-scoring .parameter{display: flex;justify-content:space-between; align-items: center;font-size: large;font-weight: 600;}
+.recap-scoring{width: 60%;padding: 18px}
+.recap-scoring .parameter{display: flex;justify-content:none; align-items: center;font-size: large;font-weight: 600;}
 
 /* .pdf{width: 900px;}
 .pdf header{display: none;} */
