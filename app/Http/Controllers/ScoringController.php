@@ -25,6 +25,6 @@ class ScoringController extends Controller
         //dd($weather_datas);
         // TODO A mettre à la fin du scoring. PDF mis à cet emplacement à but de configuration.
         //PDF::view('score', ['datas' => $datas,'code_insee' => $code_insee])->landscape()->disk('local')->save($code_insee.'.pdf');
-        return view('score', ['datas' => $datas,'code_insee' => $code_insee, 'weather_datas' => $weather_datas]);
+        return view('score2', ['datas' => $datas,'code_insee' => $code_insee, 'weather_datas' => $weather_datas]);
     }
 }
