@@ -182,9 +182,9 @@
             @endforelse
           </div>
 
-          <!-- 🥕 AMAPS -->
+          <!-- 🧺 AMAPS -->
           <div class="accordion-block">
-            <h4>🥕 AMAP</h4>
+            <h4>🧺 AMAP</h4>
 
             @forelse($amaps as $amap)
               <div class="mini-card">
@@ -336,6 +336,40 @@
 
         const rain = data.daily.precipitation_sum;
 
+        const yearSeparatorPlugin = {
+            id: 'yearSeparator',
+
+            afterDraw(chart) {
+
+                const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+
+                const labels = chart.data.labels;
+
+                ctx.save();
+
+                for (let i = 1; i < labels.length; i++) {
+
+                    const currentYear = labels[i].substring(0, 4);
+                    const prevYear = labels[i - 1].substring(0, 4);
+
+                    if (currentYear !== prevYear) {
+
+                        const xPos = x.getPixelForValue(i);
+
+                        ctx.beginPath();
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+                        ctx.stroke();
+                        ctx.fillText(currentYear, xPos + 5, top + 10);
+                    }
+                }
+
+                ctx.restore();
+            }
+        };
+
         // Graphique climatiques
 
         window.chart = new Chart(document.getElementById('climateChart'), {
@@ -457,7 +491,8 @@
                       }
                   }
               }
-          }
+          },
+          plugins: [yearSeparatorPlugin]
 
       });
 
