@@ -315,8 +315,8 @@ class ScoringHandler
             $count = count($city['nearby_organic_vegetable_farms']) > 0 ? count($city['nearby_organic_vegetable_farms'][0]) : 0;
             $number_of_nearby_organic_vegetable_farms += $count;
         }
-        $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2); //  1 ferme bio pour 4974 habitants
-        switch($ratio){
+        $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2, 2); //  1 ferme bio pour 4974 habitants
+        switch(true){
             case $ratio >= 1:
                 return 'Forte ('.$ratio.')';
             case $ratio >= 0.8:
