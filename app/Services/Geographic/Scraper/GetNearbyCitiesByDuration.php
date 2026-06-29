@@ -45,27 +45,37 @@ class GetNearbyCitiesByDuration
      */
     private function getCitiesFromIsochrone(string $polygonString): JsonResponse
     {
+        dd($polygonString);
         try {
             $overpass_url = "https://overpass-api.de/api/interpreter";
+
             $query = sprintf(
                 '[out:json];
                 (
-                relation["admin_level"="8"]["boundary"="administrative"]["name"~".*"](poly:"' . $polygonString . '");
+                    relation["admin_level"="8"]["boundary"="administrative"]["name"~".*"](poly:"%s");
                 );
-                out geom;'
+                out geom;',
+                $polygonString
             );
 
-            $response = retry(5,
+            $response = retry(
+                5,
                 function ($attempts) use ($overpass_url, $query) {
-                    return Http::withHeaders([
-                        'Content-Type' => 'application/json; charset=utf-8'
-                    ])->get($overpass_url,[
-                        'data' => $query
-                    ])->throw();
-                }, function ($attempts) {
-                    return 1000*pow(2,$attempts);  
+                    return Http::asForm()
+                        ->withHeaders([
+                            'User-Agent' => 'GeoImporter/1.0',
+                            'Referer'    => 'http://localhost:8001'
+                        ])
+                        ->post($overpass_url, [
+                            'data' => $query,
+                        ])
+                        ->throw();
+                },
+                function ($attempts) {
+                    return 1000 * pow(2, $attempts);
                 }
             );
+
             $data = $response->json();
             $communes = [];
             foreach ($data['elements'] ?? [] as $element) {

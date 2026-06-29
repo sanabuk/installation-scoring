@@ -20,6 +20,7 @@ use App\Services\Tourism\Service\RestaurantService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class ScoringHandler
 {
@@ -53,33 +54,57 @@ class ScoringHandler
                 $isochrone = $isochrone_feature['geometry']['coordinates'][0];
                 $interval = $isochrone_feature['properties']['value'];
                 Log::info('Processing isochrone with interval: ' . $interval);
-                if ($interval > 600) {
-                    $split_isochrones = $polygonIsochroneService->splitIsochroneInto4($isochrone);
-                } else {
-                    $split_isochrones = [];
-                    $polygon_string = '';
-                    foreach ($isochrone as $point) {
-                        $polygon_string .= $point[1].' '.$point[0].' ';
-                    }
-                    $polygon_string = rtrim($polygon_string);
-                    $split_isochrones[] = $polygon_string;
-                }
+                // if ($interval > 600) {
+                //     $split_isochrones = $polygonIsochroneService->splitIsochroneInto4($isochrone);
+                // } else {
+                //     $split_isochrones = [];
+                // $polygon_string = '';
+                // foreach ($isochrone as $point) {
+                //     $polygon_string .= $point[0].' '.$point[1].' ';
+                // }
+                //     $polygon_string = rtrim($polygon_string);
+                //     $split_isochrones[] = $polygon_string;
+                // }
                 
                 
-                foreach ($split_isochrones as $polygon_string) {
-                    $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string, $interval);
-                    sleep(1); // To avoid Overpass API rate limit
-                    $_cities[] = $scrapNearbyCitiesByDuration();
-                    Log::info('Retrieved nearby cities for interval: ' . $interval);
-                    Log::info($_cities);
-                }
-                if ($interval > 600) {
-                    $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1],$_cities[2], $_cities[3]));
-                } else {
-                    $nearbyMunicipalities[] = $_cities[0];
+                // foreach ($split_isochrones as $polygon_string) {
+                //     $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string, $interval);
+                //     sleep(1); // To avoid Overpass API rate limit
+                //     $_cities[] = $scrapNearbyCitiesByDuration();
+                //     Log::info('Retrieved nearby cities for interval: ' . $interval);
+                //     Log::info($_cities);
+                // }
+                // if ($interval > 600) {
+                //     $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1],$_cities[2], $_cities[3]));
+                // } else {
+                //     $nearbyMunicipalities[] = $_cities[0];
+                // }
+                
+                $geom = [
+                    'type' => 'Polygon',
+                    'coordinates' => [$isochrone]
+                ];
+                //dump(json_encode($geom));
+                $response = Http::get(
+                    'https://apicarto.ign.fr/api/limites-administratives/commune',
+                    [
+                        'geom' => json_encode($geom)
+                    ]
+                );
+                foreach($response->json()['features'] as $feature){
+                    $nearbyMunicipalities[] = [
+                        'name' => $feature['properties']['nom_com'],
+                        'code_insee' => $feature['properties']['insee_com'],
+                        'code_postal' => $feature['properties']['code_postal'],
+                        'population' => $feature['properties']['population'],
+                        'limit_duration' => $interval
+                    ];
                 }
             }
-            $nearbyMunicipalities = $this->mergeUniqueByKeys(array_merge($nearbyMunicipalities[0], $nearbyMunicipalities[1]));
+            //dump($nearbyMunicipalities);
+            $nearbyMunicipalities = $this->mergeUniqueByKeys($nearbyMunicipalities);
+
+            //dump($nearbyMunicipalities);
 
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
             dump($codes_insee_array);
@@ -95,7 +120,7 @@ class ScoringHandler
             $nearbyOrganicVegetableFarms = array_values(array_unique($nearbyOrganicVegetableFarms, SORT_REGULAR));
             Log::info('Nearby organic vegetable farms');
             $_results_with_organic_farms = $hydrator->hydrate($nearbyMunicipalities, $nearbyOrganicVegetableFarms, 'code_insee', 'code_insee', 'nearby_organic_vegetable_farms');
-            // dump($_results_with_organic_farms);
+            //dump($_results_with_organic_farms);
 
             // $extraTaxService = new ExtraTaxService();
             // $extraTaxInfo = $extraTaxService->getExtraTax($codes_insee_array);
@@ -111,34 +136,34 @@ class ScoringHandler
             }
             Log::info('Incoming tax info');
             $_results_with_incoming_tax = $hydrator->hydrate($_results_with_organic_farms, $incomingTaxInfos, 'code_insee', 'code_insee', 'incoming_tax');
-            // dump($_results_with_incoming_tax);
+            dump($_results_with_incoming_tax);
 
-            $restaurants = [];
-            foreach ($codes_insee_array as $code_insee) {
-                Log::info($code_insee);
-                $get_polygon = new GetPolygonFromCodeInsee($code_insee);
-                $polygon_string = $get_polygon();
-                $scrapRestaurantsOffer = new RestaurantService();
-                $new_restaurants = $scrapRestaurantsOffer->getRestaurants($polygon_string);
-                $restaurants = array_merge($restaurants, $new_restaurants);
-                //usleep(50*1000); // To avoid Overpass API rate limit
-            }
-            $restaurants = array_values(array_unique($restaurants,SORT_REGULAR));
-            Log::info('Restaurants info');
-            $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
+            // $restaurants = [];
+            // foreach ($codes_insee_array as $code_insee) {
+            //     Log::info($code_insee);
+            //     $get_polygon = new GetPolygonFromCodeInsee($code_insee);
+            //     $polygon_string = $get_polygon();
+            //     $scrapRestaurantsOffer = new RestaurantService();
+            //     $new_restaurants = $scrapRestaurantsOffer->getRestaurants($polygon_string);
+            //     $restaurants = array_merge($restaurants, $new_restaurants);
+            //     //usleep(50*1000); // To avoid Overpass API rate limit
+            // }
+            // $restaurants = array_values(array_unique($restaurants,SORT_REGULAR));
+            // Log::info('Restaurants info');
+            // $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
 
-            $marketplaces = [];
-            foreach ($codes_insee_array as $code_insee) {
-                $get_polygon = new GetPolygonFromCodeInsee($code_insee);
-                $polygon_string = $get_polygon();
-                $scrapMarketplacesOffer = new MarketplaceService();
-                $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
-                //usleep(50*1000);  // To avoid Overpass API rate limit
-            }
-            $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
-            Log::info('Marketplaces info');
-            $_global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
-
+            // $marketplaces = [];
+            // foreach ($codes_insee_array as $code_insee) {
+            //     $get_polygon = new GetPolygonFromCodeInsee($code_insee);
+            //     $polygon_string = $get_polygon();
+            //     $scrapMarketplacesOffer = new MarketplaceService();
+            //     $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
+            //     //usleep(50*1000);  // To avoid Overpass API rate limit
+            // }
+            // $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
+            // Log::info('Marketplaces info');
+            // $_global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
+            $_global_results = $_results_with_incoming_tax;
             $amap = [];
             foreach ($nearbyMunicipalities as $key => $value) {
                 $amap_service = new AmapService();
@@ -292,7 +317,10 @@ class ScoringHandler
             $total_foyers_imposables += $city['incoming_tax'][0][0]['number_of_taxable_households'] ?? 0;            
             $incoming_tax_score_cumulated += $city['incoming_tax'][0][0]['scoring_incoming_tax'] * ($city['incoming_tax'][0][0]['number_of_taxable_households'] * $ponderation ?? 0);
         }
-        $scoreDemandeLocale = round($incoming_tax_score_cumulated / $total_foyers_imposables, 2);
+        $scoreDemandeLocale = 0;
+        if($total_foyers_imposables > 0){
+            $scoreDemandeLocale = round($incoming_tax_score_cumulated / $total_foyers_imposables, 2);
+        }
         switch($scoreDemandeLocale){
             case $scoreDemandeLocale >= 100:
                 return 'Excellent ('.$scoreDemandeLocale.')';
@@ -315,7 +343,10 @@ class ScoringHandler
             $count = count($city['nearby_organic_vegetable_farms']) > 0 ? count($city['nearby_organic_vegetable_farms'][0]) : 0;
             $number_of_nearby_organic_vegetable_farms += $count;
         }
-        $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2, 2); //  1 ferme bio pour 4974 habitants
+        $ratio = 0;
+        if($population_totale > 0){
+            $ratio = round(($number_of_nearby_organic_vegetable_farms / $population_totale) * 4974,2, 2); //  1 ferme bio pour 4974 habitants
+        }
         switch(true){
             case $ratio >= 1:
                 return 'Forte ('.$ratio.')';

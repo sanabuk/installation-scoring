@@ -25,7 +25,7 @@ class GetIsochroneByDuration
     public function getIsochrone(): array
     {
         try {
-            $url = 'https://api.openrouteservice.org/v2/isochrones/' . $this->type_locomotion;
+            $url = 'https://api.heigit.org/openrouteservice/v2/isochrones/' . $this->type_locomotion;
             $response = retry(5,
                 function ($attempt) use ($url) {
                     return Http::withHeaders([
