@@ -10,11 +10,13 @@ use function PHPUnit\Framework\throwException;
 
 class GetNearbyCitiesByDuration
 {
-    public string $isochrone;
+    public string $type;
+    public array $isochrone;
     public int $interval;
 
-    public function __construct(string $isochrone, int $interval)
+    public function __construct(string $type, array $isochrone, int $interval)
     {
+        $this->type = $type;
         $this->isochrone = $isochrone;
         $this->interval = $interval;
     }
@@ -32,8 +34,8 @@ class GetNearbyCitiesByDuration
     private function getCities():array
     {
         try {
-            $cities_from_isochrone = $this->getCitiesFromIsochrone($this->isochrone);
-            return $cities_from_isochrone->getOriginalContent();
+            $cities_from_isochrone = $this->getCitiesFromIsochrone();
+            return $cities_from_isochrone;
         } catch (\Exception $e) {
             throw $e;
         }
@@ -43,53 +45,30 @@ class GetNearbyCitiesByDuration
     /**
      * @throws \Exception
      */
-    private function getCitiesFromIsochrone(string $polygonString): JsonResponse
+    private function getCitiesFromIsochrone(): array
     {
-        dd($polygonString);
         try {
-            $overpass_url = "https://overpass-api.de/api/interpreter";
+            $apicarto_api_url = 'https://apicarto.ign.fr/api/limites-administratives/commune';
+            $geom = [
+                'type' => $this->type,
+                'coordinates' => [$this->isochrone]
+            ];
+            $response = Http::get($apicarto_api_url, [
+                'geom' => json_encode($geom),
+            ]);
 
-            $query = sprintf(
-                '[out:json];
-                (
-                    relation["admin_level"="8"]["boundary"="administrative"]["name"~".*"](poly:"%s");
-                );
-                out geom;',
-                $polygonString
-            );
-
-            $response = retry(
-                5,
-                function ($attempts) use ($overpass_url, $query) {
-                    return Http::asForm()
-                        ->withHeaders([
-                            'User-Agent' => 'GeoImporter/1.0',
-                            'Referer'    => 'http://localhost:8001'
-                        ])
-                        ->post($overpass_url, [
-                            'data' => $query,
-                        ])
-                        ->throw();
-                },
-                function ($attempts) {
-                    return 1000 * pow(2, $attempts);
-                }
-            );
-
-            $data = $response->json();
-            $communes = [];
-            foreach ($data['elements'] ?? [] as $element) {
-                if (isset($element['tags']['name']) && isset($element['tags']['ref:INSEE']) && isset($element['tags']['population'])) {
-                    $communes[] = [
-                        'name' => $element['tags']['name'],
-                        'code_insee' => $element['tags']['ref:INSEE'],
-                        'code_postal' => $element['tags']['postal_code'],
-                        'population' => $element['tags']['population'],
-                        'limit_duration' => $this->interval
-                    ];
-                }
+            foreach($response->json()['features'] as $feature){
+                $nearbyMunicipalities[] = [
+                    'name' => $feature['properties']['nom_com'],
+                    'code_insee' => $feature['properties']['insee_com'],
+                    'code_postal' => $feature['properties']['code_postal'],
+                    'population' => $feature['properties']['population'],
+                    'limit_duration' => $this->interval
+                ];
             }
-            return response()->json(array_unique($communes, SORT_REGULAR));
+
+            return $nearbyMunicipalities ?? [];
+
         } catch (\Exception $e) {
             Log::error('Error in GetNearbyCitiesByDuration class: ' . $e->getMessage());
             throw $e;

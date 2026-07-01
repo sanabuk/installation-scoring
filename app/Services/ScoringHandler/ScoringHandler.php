@@ -52,60 +52,33 @@ class ScoringHandler
             foreach ($isochrones as $isochrone_feature) {
                 $_cities = [];
                 $isochrone = $isochrone_feature['geometry']['coordinates'][0];
+                $type = $isochrone_feature['geometry']['type'];
                 $interval = $isochrone_feature['properties']['value'];
                 Log::info('Processing isochrone with interval: ' . $interval);
-                // if ($interval > 600) {
-                //     $split_isochrones = $polygonIsochroneService->splitIsochroneInto4($isochrone);
-                // } else {
-                //     $split_isochrones = [];
-                // $polygon_string = '';
-                // foreach ($isochrone as $point) {
-                //     $polygon_string .= $point[0].' '.$point[1].' ';
+                // $geom = [
+                //     'type' => $type,
+                //     'coordinates' => [$isochrone]
+                // ];
+                // $response = Http::get(
+                //     'https://apicarto.ign.fr/api/limites-administratives/commune',
+                //     [
+                //         'geom' => json_encode($geom)
+                //     ]
+                // );
+                // foreach($response->json()['features'] as $feature){
+                //     $nearbyMunicipalities[] = [
+                //         'name' => $feature['properties']['nom_com'],
+                //         'code_insee' => $feature['properties']['insee_com'],
+                //         'code_postal' => $feature['properties']['code_postal'],
+                //         'population' => $feature['properties']['population'],
+                //         'limit_duration' => $interval
+                //     ];
                 // }
-                //     $polygon_string = rtrim($polygon_string);
-                //     $split_isochrones[] = $polygon_string;
-                // }
-                
-                
-                // foreach ($split_isochrones as $polygon_string) {
-                //     $scrapNearbyCitiesByDuration = new GetNearbyCitiesByDuration($polygon_string, $interval);
-                //     sleep(1); // To avoid Overpass API rate limit
-                //     $_cities[] = $scrapNearbyCitiesByDuration();
-                //     Log::info('Retrieved nearby cities for interval: ' . $interval);
-                //     Log::info($_cities);
-                // }
-                // if ($interval > 600) {
-                //     $nearbyMunicipalities[] = $this->mergeUniqueByKeys(array_merge($_cities[0], $_cities[1],$_cities[2], $_cities[3]));
-                // } else {
-                //     $nearbyMunicipalities[] = $_cities[0];
-                // }
-                
-                $geom = [
-                    'type' => 'Polygon',
-                    'coordinates' => [$isochrone]
-                ];
-                //dump(json_encode($geom));
-                $response = Http::get(
-                    'https://apicarto.ign.fr/api/limites-administratives/commune',
-                    [
-                        'geom' => json_encode($geom)
-                    ]
-                );
-                foreach($response->json()['features'] as $feature){
-                    $nearbyMunicipalities[] = [
-                        'name' => $feature['properties']['nom_com'],
-                        'code_insee' => $feature['properties']['insee_com'],
-                        'code_postal' => $feature['properties']['code_postal'],
-                        'population' => $feature['properties']['population'],
-                        'limit_duration' => $interval
-                    ];
-                }
+                $getNearbyCitiesByDuration = new GetNearbyCitiesByDuration($type, $isochrone, $interval);
+                $_cities = $getNearbyCitiesByDuration();
+                $nearbyMunicipalities = array_merge($nearbyMunicipalities, $_cities);
             }
-            //dump($nearbyMunicipalities);
             $nearbyMunicipalities = $this->mergeUniqueByKeys($nearbyMunicipalities);
-
-            //dump($nearbyMunicipalities);
-
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
             dump($codes_insee_array);
 

@@ -103,7 +103,10 @@ class WeatherService implements WeatherServiceInterface
     {
         return count(array_filter(
             $daily['temperature_2m_min'],
-            fn(float $t): bool => $t < 0.0
+            function ($t): bool {
+                $t = is_null($t) ? 0.0 : $t;
+                return $t < 0.0;
+            }
         ));
     }
 
@@ -199,7 +202,10 @@ class WeatherService implements WeatherServiceInterface
     {
         return count(array_filter(
             $daily['temperature_2m_max'],
-            fn(float $t): bool => $t >= $threshold
+            function ($t) use($threshold): bool {
+                $t = is_null($t) ? 0.0 : $t;
+                return $t >= $threshold;
+            }
         ));
     }
 
@@ -207,7 +213,10 @@ class WeatherService implements WeatherServiceInterface
     {
         return count(array_filter(
             $daily['temperature_2m_max'],
-            fn(float $t): bool => $t >= $threshold
+            function ($t) use($threshold): bool {
+                $t = is_null($t) ? 0.0 : $t;
+                return $t >= $threshold;
+            }
         ));
     }
 
@@ -267,7 +276,10 @@ class WeatherService implements WeatherServiceInterface
     {
         return count(array_filter(
             $daily['precipitation_sum'],
-            fn(float $p): bool => $p >= $thresholdMm
+            function ($p) use($thresholdMm): bool {
+                $p = is_null($p) ? 0.0 : $p;
+                return $p >= $thresholdMm;
+            }
         ));
     }
 
@@ -326,7 +338,7 @@ class WeatherService implements WeatherServiceInterface
 
         $unstableDays = count(array_filter(
             $daily['weathercode'],
-            fn(int $code): bool => in_array($code, $unstableCodes, true)
+            fn($code): bool => in_array($code, $unstableCodes, true)
         ));
 
         return $unstableDays / count($daily['weathercode']);
