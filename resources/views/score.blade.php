@@ -30,25 +30,62 @@
         {{-- <a class="btn-primary" href="#Essayer">Essayer gratuitement</a> --}}
       </nav>
     </header>
-    <h1>Scoring de votre emplacement</h1>
-    <section id="recap-scoring">
-      <div class="recap-scoring">
-        {{-- <div class="parameter">
-          <div>Score d'implantation :</div>
-          <div>72/100</div>
-        </div> --}}
-        <div class="parameter">
-          <div>Potentiel économique de la population locale : </div>
-          <div> {{ $datas->scoring->demande_locale }}</div>
+    <!-- HERO -->
+  <section class="hero">
+    <div class="hero-card">
+      <h1>Votre potentiel d’installation 🌱</h1>
+
+        <p class="lead">
+        Analyse intelligente du marché local pour maximiser vos chances de réussite.
+        </p>
+
+      <div class="feature-list">
+
+        <div class="feature">
+
+        <div>
+            <strong>👥 Population cible</strong>
+            <div class="badge badge-blue">{{ number_format($datas->scoring->population_totale, 0, ',', ' ') }}</div>
         </div>
-        <div class="parameter">
-          <div>Concurrence : </div>
-          <div>{{ $datas->scoring->concurrence }}</div>
+
         </div>
-        
+
+        <div class="feature">
+        <div>
+            <strong>💰 Potentiel économique local</strong>
+            <div class="badge badge-orange">
+            {{ $datas->scoring->demande_locale }}
+            </div>
+        </div>
+        </div>
+
+        <div class="feature">
+        <div>
+            <strong>🌱 Intensité concurrentielle</strong>
+            <div class="badge badge-green">
+            {{ $datas->scoring->concurrence }}
+            </div>
+        </div>
+        </div>
+
       </div>
-      
-    </section>
+    </div>
+
+    <!-- SCORE -->
+    <aside class="card-aside">
+      <h3>Score global</h3>
+
+      <div style="font-size:48px;font-weight:900;color:var(--accent)">
+        {{ $datas->weather->globalScore ?? '--' }}
+        </div>
+
+        <div style="font-size:14px;color:var(--muted)">Score d’opportunité</div>
+
+      <p style="color:var(--muted)">
+        {{ $datas->weather->globalCommentary }}
+      </p>
+    </aside>
+  </section>
     <section>
         <h2>1 - Les indicateurs climatiques</h2>
         <p>Les indicateurs climatiques sont calculés sur la base des 5 dernières années. Les données proviennent de l'api de open-meteo.com</p>
@@ -166,7 +203,7 @@
                     </svg>x{{ count($city->nearby_organic_vegetable_farms[0]) }}
                   </span>
                   @endif 
-                  @if(count($city->restaurants))
+                  {{-- @if(count($city->restaurants))
                   <span class="icon" title="Restaurant sur la commune">
                     <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
                       width="20.000000pt" height="20.000000pt" viewBox="0 0 512.000000 512.000000"
@@ -302,7 +339,7 @@
                       </g>
                     </svg>x{{ count($city->marketplaces[0]) }}
                   </span>
-                  @endif
+                  @endif --}}
                   @if(count($city->amap))
                   <span class="icon" title="Amap sur la commune">
                     <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
