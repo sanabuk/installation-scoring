@@ -1,17 +1,47 @@
+@php
+    use Illuminate\Support\Facades\Http;
+
+    $titles = implode('|', array_unique(array_map(
+        fn($city) => $city->name,
+        $datas->cities
+    )));
+
+    $response = Http::withHeaders([
+        'User-Agent' => 'MonApplication/1.0 (contact@monsite.fr)',
+    ])->get('https://fr.wikipedia.org/w/api.php', [
+        'action' => 'query',
+        'titles' => $titles,
+        'prop' => 'pageimages',
+        'piprop' => 'original',
+        'format' => 'json',
+    ]);
+
+    $pages = $response->json('query.pages', []);
+
+    $images = [];
+
+    foreach ($pages as $page) {
+        if (isset($page['title'])) {
+            $images[$page['title']] = data_get($page, 'original.source');
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Scoring</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    @vite(['resources/css/style.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Scoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  @vite(['resources/css/style.css', 'resources/js/app.js'])
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 </head>
+
 <body>
   <div class="container pdf">
     <header>
@@ -31,109 +61,82 @@
       </nav>
     </header>
     <!-- HERO -->
-  <section class="hero">
-    <div class="hero-card">
-      <h1>Votre potentiel d’installation 🌱</h1>
+    <section class="hero">
+      <div class="hero-card">
+        <h1>Votre potentiel d’installation 🌱</h1>
 
         <p class="lead">
-        Analyse intelligente du marché local pour maximiser vos chances de réussite.
+          Analyse intelligente du marché local pour maximiser vos chances de réussite.
         </p>
 
-      <div class="feature-list">
+        <div class="feature-list">
 
-        <div class="feature">
+          <div class="feature">
 
-        <div>
-            <strong>👥 Population cible</strong>
-            <div class="badge badge-blue">{{ number_format($datas->scoring->population_totale, 0, ',', ' ') }}</div>
-        </div>
-
-        </div>
-
-        <div class="feature">
-        <div>
-            <strong>💰 Potentiel économique local</strong>
-            <div class="badge badge-orange">
-            {{ $datas->scoring->demande_locale }}
+            <div>
+              <strong>👥 Population cible</strong>
+              <div class="badge badge-blue">{{ number_format($datas->scoring->population_totale, 0, ',', ' ') }}</div>
             </div>
-        </div>
-        </div>
 
-        <div class="feature">
-        <div>
-            <strong>🌱 Intensité concurrentielle</strong>
-            <div class="badge badge-green">
-            {{ $datas->scoring->concurrence }}
+          </div>
+
+          <div class="feature">
+            <div>
+              <strong>💰 Potentiel économique local</strong>
+              <div class="badge badge-orange">
+                {{ $datas->scoring->demande_locale }}
+              </div>
             </div>
-        </div>
-        </div>
+          </div>
 
+          <div class="feature">
+            <div>
+              <strong>🌱 Intensité concurrentielle</strong>
+              <div class="badge badge-green">
+                {{ $datas->scoring->concurrence }}
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
 
-    <!-- SCORE -->
-    <aside class="card-aside">
-      <h3>Score global</h3>
+      <!-- SCORE -->
+      <aside class="card-aside">
+        <h3>Score global</h3>
 
-      <div style="font-size:48px;font-weight:900;color:var(--accent)">
-        {{ $datas->weather->globalScore ?? '--' }}
+        <div style="font-size:48px;font-weight:900;color:var(--accent)">
+          {{ $datas->weather->globalScore ?? '--' }}
         </div>
 
         <div style="font-size:14px;color:var(--muted)">Score d’opportunité</div>
 
-      <p style="color:var(--muted)">
-        {{ $datas->weather->globalCommentary }}
-      </p>
-    </aside>
-  </section>
-    <section>
-        <h2>1 - Les indicateurs climatiques</h2>
-        <p>Les indicateurs climatiques sont calculés sur la base des 5 dernières années. Les données proviennent de l'api de open-meteo.com</p>
-        <ul>
-          <li>Cumul températures par an: {{ $datas->weather->indicators->degree_days_per_year }}</li>
-          <li>Jours de gel par an: {{ $datas->weather->indicators->frost_days_per_year }}</li>
-          <li>Jours de fortes chaleur par an: {{ $datas->weather->indicators->hot_days_per_year }}</li>
-          <li>Cumul pluviométrie par an: {{ $datas->weather->indicators->rain_mm_per_year }} mm</li>
-          <li>Nombres de jours consécutifs sans précipitations (< 1mm): {{ $datas->weather->indicators->max_dry_days }} </li>
-          <li>Nombres de jours avec fortes précipitations par an (> 20mm): {{ $datas->weather->indicators->heavy_rain_days_per_year }} </li>
-          <li>Heures d'ensoleillement par an: {{ $datas->weather->indicators->sunshine_hours_per_year }}</li>
-          <li>Amplitude thermique: {{ $datas->weather->indicators->thermal_amplitude }}°C</li>
-          <li>Ratio d'instabilité: {{ $datas->weather->indicators->unstable_ratio }}</li>
-        </ul>
-        <p>
-          {!! nl2br(e($datas->weather->commentaries)) !!}
+        <p style="color:var(--muted)">
+          {{ $datas->weather->globalCommentary }}
         </p>
-        <div>
-          <div style="font-size: large; font-weight:600">
-            <div>{{ $datas->weather->globalCommentary }}({{ $datas->weather->globalScore }}/100)</div>
-          </div>
-          <div style="font-size: large; font-weight:600">
-            <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
-          </div>
-        </div>
-        <div class="chart-container">
-          <h2>Données climatiques</h2>
-          <button onclick="chart.resetZoom()">Reset zoom</button>
-          <canvas id="climateChart"></canvas>
-        </div>
+      </aside>
     </section>
     <section>
-        <h2>2 - Le bassin de population et sa situation financière</h2>
-        <p>La population située à 10 minutes en voiture de votre emplacement s'élève à {{ $datas->scoring->population_totale }} personnes.</p>
-        <div class="population">
+      <h2>1 - Le bassin de population et sa situation économique</h2>
+      <p>La population située à 10 minutes en voiture de votre emplacement s'élève à {{
+        $datas->scoring->population_totale }} personnes.</p>
+      <div class="population">
         @foreach ($datas->cities as $key => $city)
-            <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
-                <h3>{{ $city->name }}</h3>
-                <div> 
-                  @if(count($city->nearby_organic_vegetable_farms))
-                  <span class="icon" title="Maraicher bio sur la commune">
-                    <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                      width="20.000000pt" height="20.000000pt" viewBox="0 0 512.000000 512.000000"
-                      preserveAspectRatio="xMidYMid meet">
+        <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
+          <h3>{{ $city->name }}</h3>
+          @php  
+            $url = $images[$city->name] ?? null;
+          @endphp
+        
+          <img src="{{ $url }}" alt="" style="width:100%;">
+          <div>
+            @if(count($city->nearby_organic_vegetable_farms))
+            <span class="icon" title="Maraicher bio sur la commune">
+              <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"
+                viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet">
 
-                      <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-                      fill="#000000" stroke="none">
-                      <path d="M1575 5106 c-117 -37 -220 -128 -276 -241 -19 -40 -76 -220 -140
+                <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                  <path d="M1575 5106 c-117 -37 -220 -128 -276 -241 -19 -40 -76 -220 -140
                       -444 l-106 -376 -219 -5 c-204 -5 -221 -6 -255 -27 -141 -88 -16 -314 237
                       -430 43 -20 54 -29 48 -42 -68 -161 -71 -278 -9 -401 49 -97 149 -189 250
                       -230 49 -20 51 -22 70 -87 49 -173 177 -374 336 -528 l99 -96 0 -85 c0 -101
@@ -186,32 +189,30 @@
                       16 0 319 c0 176 3 320 6 320 4 0 57 -24 118 -54z m1036 -336 l0 -270 -210 0
                       -210 0 0 270 0 270 210 0 210 0 0 -270z m0 -540 l0 -120 -210 0 -210 0 0 120
                       0 120 210 0 210 0 0 -120z m0 -420 l0 -150 -210 0 -210 0 0 150 0 150 210 0
-                      210 0 0 -150z"/>
-                      <path d="M1650 3221 c-115 -24 -178 -113 -120 -171 25 -25 70 -26 101 -2 42
-                      33 72 34 123 7 26 -14 56 -25 67 -25 28 0 69 44 69 73 0 73 -136 139 -240 118z"/>
-                      <path d="M2670 3221 c-103 -21 -166 -92 -135 -150 23 -46 74 -55 117 -22 41
-                      33 69 34 121 6 26 -14 57 -25 68 -25 28 0 69 44 69 73 0 73 -136 139 -240 118z"/>
-                      <path d="M2009 2659 c-31 -11 -54 -58 -44 -88 10 -32 83 -89 138 -107 178 -59
+                      210 0 0 -150z" />
+                  <path d="M1650 3221 c-115 -24 -178 -113 -120 -171 25 -25 70 -26 101 -2 42
+                      33 72 34 123 7 26 -14 56 -25 67 -25 28 0 69 44 69 73 0 73 -136 139 -240 118z" />
+                  <path d="M2670 3221 c-103 -21 -166 -92 -135 -150 23 -46 74 -55 117 -22 41
+                      33 69 34 121 6 26 -14 57 -25 68 -25 28 0 69 44 69 73 0 73 -136 139 -240 118z" />
+                  <path d="M2009 2659 c-31 -11 -54 -58 -44 -88 10 -32 83 -89 138 -107 178 -59
                       416 69 329 177 -26 31 -70 29 -117 -6 -30 -23 -50 -30 -99 -33 -56 -3 -65 0
-                      -116 32 -30 20 -57 36 -60 35 -3 0 -17 -5 -31 -10z"/>
-                      <path d="M1174 579 c-22 -11 -44 -48 -44 -75 0 -8 11 -26 25 -39 23 -24 30
+                      -116 32 -30 20 -57 36 -60 35 -3 0 -17 -5 -31 -10z" />
+                  <path d="M1174 579 c-22 -11 -44 -48 -44 -75 0 -8 11 -26 25 -39 23 -24 30
                       -25 140 -25 111 0 117 1 142 26 20 20 24 31 19 57 -11 56 -25 62 -149 64 -65
-                      2 -121 -2 -133 -8z"/>
-                      <path d="M2986 569 c-33 -26 -36 -79 -6 -109 18 -18 33 -20 138 -20 111 0 120
-                      1 140 23 31 33 29 80 -4 106 -23 18 -41 21 -134 21 -93 0 -111 -3 -134 -21z"/>
-                      </g>
-                    </svg>x{{ count($city->nearby_organic_vegetable_farms[0]) }}
-                  </span>
-                  @endif 
-                  {{-- @if(count($city->restaurants))
-                  <span class="icon" title="Restaurant sur la commune">
-                    <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                      width="20.000000pt" height="20.000000pt" viewBox="0 0 512.000000 512.000000"
-                      preserveAspectRatio="xMidYMid meet">
+                      2 -121 -2 -133 -8z" />
+                  <path d="M2986 569 c-33 -26 -36 -79 -6 -109 18 -18 33 -20 138 -20 111 0 120
+                      1 140 23 31 33 29 80 -4 106 -23 18 -41 21 -134 21 -93 0 -111 -3 -134 -21z" />
+                </g>
+              </svg>x{{ count($city->nearby_organic_vegetable_farms[0]) }}
+            </span>
+            @endif
+            {{-- @if(count($city->restaurants))
+            <span class="icon" title="Restaurant sur la commune">
+              <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"
+                viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet">
 
-                      <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-                      fill="#000000" stroke="none">
-                      <path d="M51 5106 c-51 -28 -50 -14 -50 -711 -1 -730 -1 -731 69 -873 49 -98
+                <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                  <path d="M51 5106 c-51 -28 -50 -14 -50 -711 -1 -730 -1 -731 69 -873 49 -98
                       144 -199 238 -252 l62 -35 2 -1505 3 -1505 21 -46 c31 -66 78 -114 142 -146
                       47 -23 70 -28 132 -28 125 0 222 62 274 174 l21 46 3 1505 3 1505 62 35 c93
                       53 188 154 237 252 70 142 70 144 70 871 0 703 1 690 -55 715 -33 15 -57 15
@@ -222,50 +223,48 @@
                       68 -137 41z m1076 -1400 c-17 -107 -132 -242 -243 -285 -32 -13 -71 -36 -86
                       -52 l-28 -29 0 -1531 c0 -1664 3 -1571 -55 -1597 -33 -15 -57 -15 -90 0 -58
                       26 -55 -67 -55 1597 l0 1529 -26 31 c-14 17 -31 31 -38 31 -31 0 -136 64 -183
-                      111 -53 53 -101 138 -110 195 l-6 34 463 0 463 0 -6 -34z"/>
-                      <path d="M4934 5081 c-91 -61 -220 -177 -306 -275 -211 -238 -356 -536 -420
+                      111 -53 53 -101 138 -110 195 l-6 34 463 0 463 0 -6 -34z" />
+                  <path d="M4934 5081 c-91 -61 -220 -177 -306 -275 -211 -238 -356 -536 -420
                       -858 -22 -110 -22 -135 -26 -889 -3 -857 -4 -846 59 -971 23 -45 66 -98 155
                       -188 l124 -126 2 -775 c3 -763 3 -775 24 -820 31 -66 78 -114 142 -146 47 -23
                       70 -28 132 -28 125 0 222 62 274 174 l21 46 3 2405 c2 1799 -1 2412 -9 2433
                       -13 31 -55 57 -92 57 -14 0 -51 -18 -83 -39z m-25 -4824 c-13 -30 -55 -57 -89
                       -57 -29 0 -76 26 -86 47 -5 10 -11 377 -14 815 l-5 797 -141 143 c-92 94 -149
                       160 -165 193 l-24 50 -3 734 c-2 608 0 755 13 850 44 343 197 658 435 900 l85
-                      86 3 -2265 c2 -1690 -1 -2272 -9 -2293z"/>
-                      <path d="M2340 4459 c-184 -21 -411 -85 -575 -163 -100 -47 -125 -72 -125
+                      86 3 -2265 c2 -1690 -1 -2272 -9 -2293z" />
+                  <path d="M2340 4459 c-184 -21 -411 -85 -575 -163 -100 -47 -125 -72 -125
                       -124 0 -46 46 -92 91 -92 18 0 91 24 163 54 290 121 586 161 889 121 363 -48
                       674 -195 946 -450 94 -87 105 -95 142 -95 58 0 99 42 99 101 0 39 -5 47 -75
-                      115 -311 302 -704 486 -1137 533 -112 13 -308 12 -418 0z"/>
-                      <path d="M2415 3974 c-219 -24 -462 -114 -654 -242 -112 -74 -299 -261 -373
+                      115 -311 302 -704 486 -1137 533 -112 13 -308 12 -418 0z" />
+                  <path d="M2415 3974 c-219 -24 -462 -114 -654 -242 -112 -74 -299 -261 -373
                       -372 -108 -163 -179 -330 -220 -519 -31 -137 -30 -423 0 -562 124 -567 547
                       -989 1115 -1111 146 -31 408 -31 553 0 146 31 244 66 375 134 381 195 648 549
                       741 981 29 136 31 398 4 532 -89 450 -368 818 -771 1018 -190 94 -364 136
                       -585 142 -80 2 -163 1 -185 -1z m326 -209 c391 -59 731 -306 912 -665 50 -100
                       95 -242 112 -359 100 -663 -360 -1286 -1025 -1387 -527 -79 -1049 199 -1280
-                      681 -273 571 -64 1249 485 1577 232 139 522 195 796 153z"/>
-                      <path d="M2514 3470 c-33 -13 -54 -50 -54 -93 0 -100 140 -134 186 -46 45 88
-                      -40 177 -132 139z"/>
-                      <path d="M2146 3379 c-266 -134 -454 -398 -495 -694 -18 -130 -16 -152 23
+                      681 -273 571 -64 1249 485 1577 232 139 522 195 796 153z" />
+                  <path d="M2514 3470 c-33 -13 -54 -50 -54 -93 0 -100 140 -134 186 -46 45 88
+                      -40 177 -132 139z" />
+                  <path d="M2146 3379 c-266 -134 -454 -398 -495 -694 -18 -130 -16 -152 23
                       -191 38 -38 70 -43 115 -19 35 18 46 47 59 161 12 105 46 211 94 292 50 86
-                      179 209 273 261 44 25 88 51 97 59 26 22 33 74 14 110 -32 61 -89 68 -180 21z"/>
-                      <path d="M3948 1532 c-9 -4 -70 -63 -134 -131 -259 -271 -519 -423 -867 -506
+                      179 209 273 261 44 25 88 51 97 59 26 22 33 74 14 110 -32 61 -89 68 -180 21z" />
+                  <path d="M3948 1532 c-9 -4 -70 -63 -134 -131 -259 -271 -519 -423 -867 -506
                       -416 -99 -876 -30 -1242 185 -56 33 -102 53 -122 53 -69 2 -119 -70 -93 -134
                       16 -37 71 -74 215 -146 806 -404 1785 -189 2348 515 17 22 27 47 27 68 0 62
-                      -79 119 -132 96z"/>
-                      <path d="M1231 1366 c-13 -7 -30 -24 -37 -37 -56 -101 76 -201 157 -120 81 81
-                      -19 213 -120 157z"/>
-                      </g>
-                    </svg>x{{ count($city->restaurants[0]) }}
-                  </span>
-                  @endif 
-                  @if(count($city->marketplaces))
-                  <span class="icon" title="Marché sur la commune">
-                    <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                      width="20.000000pt" height="20.000000pt" viewBox="0 0 512.000000 512.000000"
-                      preserveAspectRatio="xMidYMid meet">
+                      -79 119 -132 96z" />
+                  <path d="M1231 1366 c-13 -7 -30 -24 -37 -37 -56 -101 76 -201 157 -120 81 81
+                      -19 213 -120 157z" />
+                </g>
+              </svg>x{{ count($city->restaurants[0]) }}
+            </span>
+            @endif
+            @if(count($city->marketplaces))
+            <span class="icon" title="Marché sur la commune">
+              <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"
+                viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet">
 
-                      <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-                      fill="#000000" stroke="none">
-                      <path d="M442 4573 l-274 -548 4 -260 3 -261 33 -67 c22 -44 50 -81 83 -109
+                <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                  <path d="M442 4573 l-274 -548 4 -260 3 -261 33 -67 c22 -44 50 -81 83 -109
                       l49 -43 0 -787 0 -788 -85 0 -85 0 0 -855 0 -855 2390 0 2390 0 0 855 0 855
                       -85 0 -85 0 0 788 0 787 49 43 c33 28 61 65 83 109 l33 67 3 261 4 260 -274
                       548 -273 547 -1845 0 -1845 0 -273 -547z m548 365 c0 -7 -64 -237 -142 -510
@@ -324,9 +323,9 @@
                       -121 141 -238 l6 -70 -74 0 c-112 1 -180 37 -237 125 -21 33 -27 55 -30 129
                       l-5 89 77 -6 c50 -3 92 -13 122 -29z m509 2 c90 -43 145 -141 145 -257 l0 -53
                       -72 0 c-167 1 -268 102 -268 269 l0 74 75 -6 c47 -3 93 -14 120 -27z m2705
-                      -1165 l0 -685 -2220 0 -2220 0 0 685 0 685 2220 0 2220 0 0 -685z"/>
-                      <path d="M3070 1965 l0 -85 515 0 516 0 -3 83 -3 82 -512 3 -513 2 0 -85z"/>
-                      <path d="M3340 1325 l-96 -96 -49 23 c-41 19 -67 23 -145 23 -157 0 -227 -43
+                      -1165 l0 -685 -2220 0 -2220 0 0 685 0 685 2220 0 2220 0 0 -685z" />
+                  <path d="M3070 1965 l0 -85 515 0 516 0 -3 83 -3 82 -512 3 -513 2 0 -85z" />
+                  <path d="M3340 1325 l-96 -96 -49 23 c-41 19 -67 23 -145 23 -157 0 -227 -43
                       -351 -218 -40 -56 -73 -103 -75 -105 -1 -2 -33 27 -70 65 -124 123 -253 173
                       -450 173 -99 0 -115 -2 -144 -22 -65 -44 -75 -68 -78 -186 -7 -220 65 -382
                       226 -511 119 -96 255 -135 447 -129 l120 4 293 147 c202 102 307 160 337 188
@@ -335,20 +334,18 @@
                       -54 94 -94 27 -70 0 -165 -56 -205 -27 -19 -427 -222 -438 -222 -3 0 -5 16 -5
                       36 0 19 -5 66 -11 103 l-11 68 103 144 c85 118 112 148 149 167 54 27 120 28
                       175 3z m-822 -108 c155 -73 247 -227 247 -413 l0 -60 -47 0 c-134 0 -243 40
-                      -326 119 -91 86 -137 194 -137 325 l0 68 98 -4 c83 -3 107 -8 165 -35z"/>
-                      </g>
-                    </svg>x{{ count($city->marketplaces[0]) }}
-                  </span>
-                  @endif --}}
-                  @if(count($city->amap))
-                  <span class="icon" title="Amap sur la commune">
-                    <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
-                      width="20.000000pt" height="20.000000pt" viewBox="0 0 512.000000 512.000000"
-                      preserveAspectRatio="xMidYMid meet">
+                      -326 119 -91 86 -137 194 -137 325 l0 68 98 -4 c83 -3 107 -8 165 -35z" />
+                </g>
+              </svg>x{{ count($city->marketplaces[0]) }}
+            </span>
+            @endif --}}
+            @if(count($city->amap))
+            <span class="icon" title="Amap sur la commune">
+              <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"
+                viewBox="0 0 512.000000 512.000000" preserveAspectRatio="xMidYMid meet">
 
-                      <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)"
-                      fill="#000000" stroke="none">
-                      <path d="M2540 5079 c-159 -26 -289 -155 -320 -318 -5 -29 -10 -171 -10 -315
+                <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="#000000" stroke="none">
+                  <path d="M2540 5079 c-159 -26 -289 -155 -320 -318 -5 -29 -10 -171 -10 -315
                       l0 -262 -49 -48 -49 -48 -3 97 c-4 95 -5 97 -37 126 -41 37 -89 39 -129 5 -27
                       -23 -28 -28 -31 -132 l-4 -107 -81 87 c-79 82 -84 86 -125 86 -58 0 -102 -41
                       -102 -94 0 -32 12 -49 95 -138 52 -56 92 -105 89 -110 -3 -4 -13 -8 -23 -8
@@ -400,46 +397,87 @@
                       -112 4 -153 40 -117 103 -85 282 62 336 48 17 124 5 170 -26z m2118 9 c103
                       -65 119 -231 31 -314 -16 -15 -42 -32 -57 -37 -19 -8 -321 -11 -943 -11 -503
                       0 -914 2 -914 4 0 2 10 25 22 52 19 41 23 72 26 192 l4 142 897 -2 896 -3 38
-                      -23z"/>
-                      <path d="M1325 1801 c-37 -16 -60 -51 -60 -93 0 -33 6 -45 33 -69 l32 -29 199
+                      -23z" />
+                  <path d="M1325 1801 c-37 -16 -60 -51 -60 -93 0 -33 6 -45 33 -69 l32 -29 199
                       0 c199 0 200 0 229 25 39 32 48 74 27 114 -28 55 -54 61 -257 60 -101 0 -192
-                      -4 -203 -8z"/>
-                      <path d="M2394 1794 c-57 -28 -72 -103 -30 -151 l24 -28 217 0 217 0 24 28
-                      c45 52 25 134 -38 156 -18 6 -107 11 -207 11 -138 0 -183 -4 -207 -16z"/>
-                      <path d="M3472 1795 c-64 -28 -75 -114 -20 -160 29 -25 31 -25 224 -25 216 0
+                      -4 -203 -8z" />
+                  <path d="M2394 1794 c-57 -28 -72 -103 -30 -151 l24 -28 217 0 217 0 24 28
+                      c45 52 25 134 -38 156 -18 6 -107 11 -207 11 -138 0 -183 -4 -207 -16z" />
+                  <path d="M3472 1795 c-64 -28 -75 -114 -20 -160 29 -25 31 -25 224 -25 216 0
                       242 6 264 59 16 39 5 82 -26 112 -25 23 -31 24 -217 26 -151 2 -199 0 -225
-                      -12z"/>
-                      <path d="M1330 1319 c-58 -23 -82 -76 -60 -130 22 -53 49 -59 259 -59 121 0
-                      199 4 215 11 24 11 56 63 56 91 0 32 -40 77 -77 87 -48 14 -359 13 -393 0z"/>
-                      <path d="M2413 1323 c-12 -2 -34 -18 -48 -34 -35 -43 -34 -92 4 -130 l29 -29
-                      207 0 207 0 29 29 c57 57 28 149 -52 165 -34 7 -340 6 -376 -1z"/>
-                      <path d="M3483 1319 c-71 -21 -89 -112 -34 -161 l31 -28 196 0 c216 0 241 6
-                      264 60 17 41 3 87 -33 114 -26 19 -43 21 -210 23 -100 1 -197 -3 -214 -8z"/>
-                      <path d="M1295 816 c-32 -32 -40 -69 -25 -107 24 -56 35 -59 258 -59 227 0
-                      242 4 262 66 9 27 9 42 0 65 -24 57 -35 59 -263 59 -206 0 -208 0 -232 -24z"/>
-                      <path d="M2369 811 c-21 -22 -29 -39 -29 -66 0 -27 8 -44 29 -66 l29 -29 207
-                      0 207 0 29 29 c38 39 39 87 3 130 l-26 31 -210 0 -210 0 -29 -29z"/>
-                      <path d="M3457 829 c-24 -14 -49 -72 -41 -96 13 -41 28 -61 51 -72 31 -14 407
+                      -12z" />
+                  <path d="M1330 1319 c-58 -23 -82 -76 -60 -130 22 -53 49 -59 259 -59 121 0
+                      199 4 215 11 24 11 56 63 56 91 0 32 -40 77 -77 87 -48 14 -359 13 -393 0z" />
+                  <path d="M2413 1323 c-12 -2 -34 -18 -48 -34 -35 -43 -34 -92 4 -130 l29 -29
+                      207 0 207 0 29 29 c57 57 28 149 -52 165 -34 7 -340 6 -376 -1z" />
+                  <path d="M3483 1319 c-71 -21 -89 -112 -34 -161 l31 -28 196 0 c216 0 241 6
+                      264 60 17 41 3 87 -33 114 -26 19 -43 21 -210 23 -100 1 -197 -3 -214 -8z" />
+                  <path d="M1295 816 c-32 -32 -40 -69 -25 -107 24 -56 35 -59 258 -59 227 0
+                      242 4 262 66 9 27 9 42 0 65 -24 57 -35 59 -263 59 -206 0 -208 0 -232 -24z" />
+                  <path d="M2369 811 c-21 -22 -29 -39 -29 -66 0 -27 8 -44 29 -66 l29 -29 207
+                      0 207 0 29 29 c38 39 39 87 3 130 l-26 31 -210 0 -210 0 -29 -29z" />
+                  <path d="M3457 829 c-24 -14 -49 -72 -41 -96 13 -41 28 -61 51 -72 31 -14 407
                       -15 434 -1 53 29 61 121 12 160 -24 19 -39 20 -232 20 -128 0 -213 -5 -224
-                      -11z"/>
-                      </g>
-                    </svg>x{{ count($city->amap[0]) }}
-                  </span>
-                  @endif
-                </div>
-                <ul>
-                    <li>Distance : {{ $city->limit_duration/60 }} min</li>
-                    <li>Population : {{ $city->population }}</li>
-                    <li>Nb de foyers : {{ $city->incoming_tax[0][0]->number_of_taxable_households }}</li>
-                    {{-- <li>Code insee : {{ $city->code_insee }}</li> --}}
-                    <li>Score foyers imposables : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households_color }}"> {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households }}</span></li>
-                    <li>Score salaires : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_salary_tax_color }}"> {{ $city->incoming_tax[0][0]->scoring_average_salary_tax }} </span></li>
-                    <li>Score retraites/pensions : <span class="confidence-level" style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_pension_tax_color }}">{{ $city->incoming_tax[0][0]->scoring_average_pension_tax }}</span></li>
-                </ul>
-            </div>
-        @endforeach
+                      -11z" />
+                </g>
+              </svg>x{{ count($city->amap[0]) }}
+            </span>
+            @endif
+          </div>
+          <ul>
+            <li>Distance : {{ $city->limit_duration/60 }} min</li>
+            <li>Population : {{ $city->population }}</li>
+            <li>Nb de foyers : {{ $city->incoming_tax[0][0]->number_of_taxable_households }}</li>
+            {{-- <li>Code insee : {{ $city->code_insee }}</li> --}}
+            <li>Score foyers imposables : <span class="confidence-level"
+                style="background-color: {{ $city->incoming_tax[0][0]->scoring_percent_taxable_households_color }}"> {{
+                $city->incoming_tax[0][0]->scoring_percent_taxable_households }}</span></li>
+            <li>Score salaires : <span class="confidence-level"
+                style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_salary_tax_color }}"> {{
+                $city->incoming_tax[0][0]->scoring_average_salary_tax }} </span></li>
+            <li>Score retraites/pensions : <span class="confidence-level"
+                style="background-color: {{ $city->incoming_tax[0][0]->scoring_average_pension_tax_color }}">{{
+                $city->incoming_tax[0][0]->scoring_average_pension_tax }}</span></li>
+          </ul>
         </div>
+        @endforeach
+      </div>
     </section>
+    <section>
+      <h2>2 - Les indicateurs climatiques</h2>
+      <p>Les indicateurs climatiques sont calculés sur la base des 5 dernières années. Les données proviennent de l'api
+        de open-meteo.com</p>
+      <ul>
+        <li>Cumul températures par an: {{ $datas->weather->indicators->degree_days_per_year }}</li>
+        <li>Jours de gel par an: {{ $datas->weather->indicators->frost_days_per_year }}</li>
+        <li>Jours de fortes chaleur par an: {{ $datas->weather->indicators->hot_days_per_year }}</li>
+        <li>Cumul pluviométrie par an: {{ $datas->weather->indicators->rain_mm_per_year }} mm</li>
+        <li>Nombres de jours consécutifs sans précipitations (< 1mm): {{ $datas->weather->indicators->max_dry_days }}
+        </li>
+        <li>Nombres de jours avec fortes précipitations par an (> 20mm): {{
+          $datas->weather->indicators->heavy_rain_days_per_year }} </li>
+        <li>Heures d'ensoleillement par an: {{ $datas->weather->indicators->sunshine_hours_per_year }}</li>
+        <li>Amplitude thermique: {{ $datas->weather->indicators->thermal_amplitude }}°C</li>
+        <li>Ratio d'instabilité: {{ $datas->weather->indicators->unstable_ratio }}</li>
+      </ul>
+      <p>
+        {!! nl2br(e($datas->weather->commentaries)) !!}
+      </p>
+      <div>
+        <div style="font-size: large; font-weight:600">
+          <div>{{ $datas->weather->globalCommentary }}({{ $datas->weather->globalScore }}/100)</div>
+        </div>
+        <div style="font-size: large; font-weight:600">
+          <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <h2>Données climatiques</h2>
+        <button onclick="chart.resetZoom()">Reset zoom</button>
+        <canvas id="climateChart"></canvas>
+      </div>
+    </section>
+
   </div>
   <script>
     async function loadWeather() {
@@ -454,6 +492,40 @@
         const sunshineDuration = data.daily.sunshine_duration.map(v => v / 3600);
 
         const rain = data.daily.precipitation_sum;
+
+        const yearSeparatorPlugin = {
+            id: 'yearSeparator',
+
+            afterDraw(chart) {
+
+                const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+
+                const labels = chart.data.labels;
+
+                ctx.save();
+
+                for (let i = 1; i < labels.length; i++) {
+
+                    const currentYear = labels[i].substring(0, 4);
+                    const prevYear = labels[i - 1].substring(0, 4);
+
+                    if (currentYear !== prevYear) {
+
+                        const xPos = x.getPixelForValue(i);
+
+                        ctx.beginPath();
+                        ctx.moveTo(xPos, top);
+                        ctx.lineTo(xPos, bottom);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+                        ctx.stroke();
+                        ctx.fillText(currentYear, xPos + 5, top + 10);
+                    }
+                }
+
+                ctx.restore();
+            }
+        };
 
         // Graphique climatiques
 
@@ -576,7 +648,8 @@
                       }
                   }
               }
-          }
+          },
+          plugins: [yearSeparatorPlugin]
 
       });
 
@@ -584,4 +657,5 @@
     loadWeather();
   </script>
 </body>
+
 </html>
