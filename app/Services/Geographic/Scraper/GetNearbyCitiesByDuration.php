@@ -53,18 +53,23 @@ class GetNearbyCitiesByDuration
                 'type' => $this->type,
                 'coordinates' => [$this->isochrone]
             ];
+
+            //Log::info($geom);
+
             $response = Http::get($apicarto_api_url, [
                 'geom' => json_encode($geom),
             ]);
 
-            foreach($response->json()['features'] as $feature){
-                $nearbyMunicipalities[] = [
-                    'name' => $feature['properties']['nom_com'],
-                    'code_insee' => $feature['properties']['insee_com'],
-                    'code_postal' => $feature['properties']['code_postal'],
-                    'population' => $feature['properties']['population'],
-                    'limit_duration' => $this->interval
-                ];
+            if(isset($response->json()['features'])){
+                foreach($response->json()['features'] as $feature){
+                    $nearbyMunicipalities[] = [
+                        'name' => $feature['properties']['nom_com'],
+                        'code_insee' => $feature['properties']['insee_com'],
+                        'code_postal' => $feature['properties']['code_postal'],
+                        'population' => $feature['properties']['population'],
+                        'limit_duration' => $this->interval
+                    ];
+                }
             }
 
             return $nearbyMunicipalities ?? [];
