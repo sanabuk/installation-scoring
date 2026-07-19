@@ -258,6 +258,7 @@
               </svg>x{{ count($city->restaurants[0]) }}
             </span>
             @endif
+            --}}
             @if(count($city->marketplaces))
             <span class="icon" title="Marché sur la commune">
               <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"
@@ -338,7 +339,7 @@
                 </g>
               </svg>x{{ count($city->marketplaces[0]) }}
             </span>
-            @endif --}}
+            @endif
             @if(count($city->amap))
             <span class="icon" title="Amap sur la commune">
               <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="20.000000pt" height="20.000000pt"

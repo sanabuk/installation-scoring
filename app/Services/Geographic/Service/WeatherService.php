@@ -476,7 +476,7 @@ class WeatherService implements WeatherServiceInterface
 
     public function lateFrostRiskIndex(int $yearsWithLateFrost, int $totalYears): string 
     {
-        $ratio = $yearsWithLateFrost / $totalYears;
+        $ratio = $totalYears !== 0 ? $yearsWithLateFrost / $totalYears : 0.0;
 
         return match (true) {
             $ratio === 0.0 => 'absent',

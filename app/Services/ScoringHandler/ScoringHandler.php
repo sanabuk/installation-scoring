@@ -80,7 +80,8 @@ class ScoringHandler
             }
             $nearbyMunicipalities = $this->mergeUniqueByKeys($nearbyMunicipalities);
             $codes_insee_array = $this->getAllCodeInsee($nearbyMunicipalities);
-            dump($codes_insee_array);
+            $postal_codes_array = $this->getAllPostalCode($nearbyMunicipalities);
+            dump($codes_insee_array, $postal_codes_array);
 
             // $nearbyFarmService = new NearbyFarmService();
             // $nearbyFarms = $nearbyFarmService->getNearbyFarms($codes_insee_array);
@@ -124,19 +125,23 @@ class ScoringHandler
             // $restaurants = array_values(array_unique($restaurants,SORT_REGULAR));
             // Log::info('Restaurants info');
             // $_results_with_restaurants = $hydrator->hydrate($_results_with_incoming_tax, $restaurants, 'code_insee', 'code_insee', 'restaurants');
+            
+             /**
+              * MARKETPLACES
+              */
+            $marketplaces = [];
+            foreach ($postal_codes_array as $code_postal) {
+                $scrapMarketplacesOffer = new MarketplaceService();
+                $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($code_postal));
+            }
+            $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
+            Log::info('Marketplaces info');
+            dump($marketplaces);
+            $_global_results = $hydrator->hydrate($_results_with_incoming_tax, $marketplaces, 'name', 'city', 'marketplaces');
 
-            // $marketplaces = [];
-            // foreach ($codes_insee_array as $code_insee) {
-            //     $get_polygon = new GetPolygonFromCodeInsee($code_insee);
-            //     $polygon_string = $get_polygon();
-            //     $scrapMarketplacesOffer = new MarketplaceService();
-            //     $marketplaces = array_merge($marketplaces, $scrapMarketplacesOffer->getMarketplaces($polygon_string));
-            //     //usleep(50*1000);  // To avoid Overpass API rate limit
-            // }
-            // $marketplaces = array_values(array_unique($marketplaces,SORT_REGULAR));
-            // Log::info('Marketplaces info');
-            // $_global_results = $hydrator->hydrate($_results_with_restaurants, $marketplaces, 'code_insee', 'code_insee', 'marketplaces');
-            $_global_results = $_results_with_incoming_tax;
+            /**
+             * AMAP
+             */
             $amap = [];
             foreach ($nearbyMunicipalities as $key => $value) {
                 $amap_service = new AmapService();
@@ -179,6 +184,15 @@ class ScoringHandler
             $codes_insee[] = $cityInfo['code_insee'];
         }
         return $codes_insee;
+    }
+
+    private function getAllPostalCode($recap):array
+    {
+        $postal_codes = [];
+        foreach ($recap as $cityInfo) {
+            $postal_codes[] = $cityInfo['code_postal'];
+        }
+        return $postal_codes;
     }
 
     private function mergeUniqueByKeys(array $arrays): array

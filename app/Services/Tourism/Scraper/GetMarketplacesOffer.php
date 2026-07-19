@@ -2,33 +2,35 @@
 
 namespace App\Services\Tourism\Scraper;
 
-use App\Services\Tools\GetDataByPolygonFromOverpass;
+use App\Services\Tools\CsvQueryService;
 use Illuminate\Support\Facades\Log;
 
 class GetMarketplacesOffer
 {
-    private string $polygon_string;
+    private string $postal_code;
 
-    public function __construct(string $polygon_string)
+    public function __construct(string $postal_code)
     {
-        $this->polygon_string = $polygon_string;
+        $this->postal_code = $postal_code;
     }
 
     public function __invoke()
     {
-        try {
-            $call_overpass_node = new GetDataByPolygonFromOverpass($this->polygon_string, 'marketplace', 'node');
-            $marketplaces_node = $call_overpass_node();
-            $call_overpass_way = new GetDataByPolygonFromOverpass($this->polygon_string, 'marketplace', 'way');
-            $marketplaces_way = $call_overpass_way();
-            return response()->json(array_merge(
-                json_decode($marketplaces_node->getContent(), true),
-                json_decode($marketplaces_way->getContent(), true)
-            ));
+         try {
+            return $this->getFromCsv();
         } catch (\Exception $e) {
-            Log::error('Error from GetMarketplacesOffer class: ' . $e->getMessage());
-            throw new \Exception('Error GetMarketplacesOffer class : ' . $e->getMessage());
-        }
+            Log::error('Error in GetMarketplacesOffer class: ' . $e->getMessage());
+            throw $e;
+        }        
+    }
+
+    private function getFromCsv(): array
+    {
+        $csvQueryService = new CsvQueryService('marches.csv');
+        $results = $csvQueryService
+            ->where('code_postal', $this->postal_code)
+            ->get();
         
+        return $results->toArray();
     }
 }

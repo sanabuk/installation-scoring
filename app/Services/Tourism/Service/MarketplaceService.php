@@ -9,14 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class MarketplaceService
 {
-    public function getMarketplaces(string $polygon_string): array
+    public function getMarketplaces(string $postal_code)
     {
         try {
-            $getMarketplaceFromApi = new GetMarketplacesOffer($polygon_string);
-            $rawDatas = $getMarketplaceFromApi();
-            return array_map(
-                fn($rawData) => $this->mapToMarketplaceDTO($rawData), json_decode($rawDatas->getContent())
-            );
+            $marketplaceFromCsv = new GetMarketplacesOffer($postal_code);
+            $rawDatas = $marketplaceFromCsv();
+            return $this->mapToMarketplaceDTO($rawDatas);
         } catch (\Exception $e) {
             Log::error('Error in MarketplaceService class : ' . $e->getMessage());
             throw new \Exception('Error Marketplace Service : ' . $e->getMessage());
@@ -24,27 +22,19 @@ class MarketplaceService
         
     }
 
-    private function mapToMarketplaceDTO($rawData)
+    private function mapToMarketplaceDTO($rawDatas)
     {
-        $code_insee = $this->getCodeInseeFromLatAndLon(
-            $rawData->lat ?? $rawData->geometry[0]->lat ?? 0,
-            $rawData->lon ?? $rawData->geometry[0]->lon ?? 0
-        );
-        $marketplace_DTO = new MarketplaceDTO();
-        $marketplace_DTO->setName($rawData->tags->name ?? 'Unknown');
-        $marketplace_DTO->setAddress($rawData->tags->{'addr:street'} ?? null);
-        $marketplace_DTO->setCity($rawData->tags->{'addr:city'} ?? null);
-        $marketplace_DTO->setPostcode($rawData->tags->{'addr:postcode'} ?? null);
-        $marketplace_DTO->setWebsite($rawData->tags->website ?? null);
-        $marketplace_DTO->setLat($rawData->lat ?? $rawData->geometry[0]->lat ?? null);
-        $marketplace_DTO->setLon($rawData->lon ?? $rawData->geometry[0]->lon ??null);
-        $marketplace_DTO->setCodeInsee($code_insee);
-        return $marketplace_DTO;
-    }
-
-    private function getCodeInseeFromLatAndLon(float $lat, float $lon): ?string
-    {
-        $tool = new GetCodeInseeFromLatAndLon((string)$lat, (string)$lon);
-        return $tool();
+        $marketplaceList = [];
+        foreach ($rawDatas as $data) {
+            $marketplace_DTO = new MarketplaceDTO();
+            $marketplace_DTO->setName($data['nom_marche'] ?? 'Unknown');
+            $marketplace_DTO->setCity($data['commune'] ?? null);
+            $marketplace_DTO->setPostcode($data['code_postal'] ?? null);
+            $marketplace_DTO->setWebsite($data['url'] ?? null);
+            $marketplace_DTO->setHoraires($data['horaires'] ?? null);
+            $marketplaceList[] = $marketplace_DTO;
+        }
+        
+        return $marketplaceList;
     }
 }

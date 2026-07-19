@@ -4,7 +4,6 @@ namespace App\Services\Concurrence\Scraper;
 
 use App\Services\Tools\CsvQueryService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\LazyCollection;
 
 class GetAmap
 {
@@ -20,14 +19,14 @@ class GetAmap
     public function __invoke(): array
     {
         try {
-            return $this->getByCsv();
+            return $this->getFromCsv();
         } catch (\Exception $e) {
             Log::error('Error in GetAmap class: ' . $e->getMessage());
             throw $e;
         }
     }
 
-    private function getByCsv(): array
+    private function getFromCsv(): array
     {
         $csvQueryService = new CsvQueryService('amap.csv');
         $results = $csvQueryService

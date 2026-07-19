@@ -63,6 +63,7 @@ class CsvQueryService
         return LazyCollection::make(function () use ($fullPath) {
             $handle = fopen($fullPath, 'r');
             $header = fgetcsv($handle, separator: ';');
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
             while (($row = fgetcsv($handle, separator: ';')) !== false) {
                 // Ignorer les lignes vides ou invalides
                 if ($row === [null] || empty(array_filter($row))) {

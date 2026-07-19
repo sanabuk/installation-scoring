@@ -4,27 +4,20 @@ namespace App\Services\Tourism\DTO;
 
 class MarketplaceDTO implements \JsonSerializable
 {
-    protected string $name;
-    protected ?string $address;
     protected ?string $city;
-    protected ?string $postcode;
+    protected ?string $code_postal;
     protected ?string $website;
-    protected ?string $phone;
-    protected ?float $lat;
-    protected ?float $lon;
-    protected ?string $code_insee;
+    protected ?string $name;
+    protected ?string $horaires;
 
     public function jsonSerialize(): array
     {
         return [
             'name' => $this->name,
-            'address' => $this->address,
             'city' => $this->city,
-            'postcode' => $this->postcode,
+            'code_postal' => $this->code_postal,
             'website' => $this->website,
-            'lat' => $this->lat,
-            'lon' => $this->lon,
-            'code_insee' => $this->code_insee,
+            'horaires' => $this->horaires,
         ];
     }
 
@@ -36,16 +29,6 @@ class MarketplaceDTO implements \JsonSerializable
     public function setName(string $name): void
     {
         $this->name = $name;
-    }
-
-    public function getAddress(): ?string
-    {
-        return $this->address;
-    }
-
-    public function setAddress(?string $address): void
-    {
-        $this->address = $address;
     }
 
     public function getCity(): ?string
@@ -60,12 +43,12 @@ class MarketplaceDTO implements \JsonSerializable
 
     public function getPostcode(): ?string
     {
-        return $this->postcode;
+        return $this->code_postal;
     }
 
-    public function setPostcode(?string $postcode): void
+    public function setPostcode(?string $code_postal): void
     {
-        $this->postcode = $postcode;
+        $this->code_postal = $code_postal;
     }
 
     public function getWebsite(): ?string
@@ -78,33 +61,13 @@ class MarketplaceDTO implements \JsonSerializable
         $this->website = $website;
     }
 
-    public function getLat(): ?float
+    public function getHoraires(): ?string
     {
-        return $this->lat;
+        return $this->horaires;
     }
 
-    public function setLat(?float $lat): void
+    public function setHoraires(?string $horaires): void
     {
-        $this->lat = $lat;
-    }
-
-    public function getLon(): ?float
-    {
-        return $this->lon;
-    }
-
-    public function setLon(?float $lon): void
-    {
-        $this->lon = $lon;
-    }
-
-    public function getCodeInsee(): ?string
-    {
-        return $this->code_insee;
-    }
-
-    public function setCodeInsee(?string $code_insee): void
-    {
-        $this->code_insee = $code_insee;
+        $this->horaires = $horaires;
     }
 }
