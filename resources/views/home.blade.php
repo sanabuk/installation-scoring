@@ -56,7 +56,7 @@
         </div>
 
         <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
-          <button class="btn-primary">Commencer l'analyse gratuite</button>
+          <button class="btn-primary"><a class="btn-primary" href="#Essayer">Commencer l'analyse gratuite</a></button>
           {{-- <a href="#how" style="color:var(--muted);text-decoration:underline">Voir comment ça marche</a> --}}
         </div>
 
@@ -225,10 +225,11 @@
       <div>
         <h3 style="color:var(--soil)">Ce que vous obtenez</h3>
         <ul style="color:var(--muted);line-height:1.8;margin-top:10px">
-          <li>Score d'implantation et rapport PDF</li>
+          {{-- <li>Score d'implantation et rapport PDF</li> --}}
           {{-- <li>Cartes interactives et exportables</li> --}}
           <li>Analyse de la concurrence et segmentation clients</li>
-          <li>Checklists opérationnelles et estimations de coûts</li>
+          <li>Analyse climatique</li>
+          {{-- <li>Checklists opérationnelles et estimations de coûts</li> --}}
         </ul>
       </div>
 

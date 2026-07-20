@@ -29,7 +29,7 @@ class ScoringReadyMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Scoring Ready Mail',
+            subject: "Votre score d'installation est prêt!",
         );
     }
 

@@ -1,30 +1,30 @@
 @php
-    use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Http;
 
-    $titles = implode('|', array_unique(array_map(
-        fn($city) => $city->name,
-        $datas->cities
-    )));
+$titles = implode('|', array_unique(array_map(
+fn($city) => $city->name,
+$datas->cities
+)));
 
-    $response = Http::withHeaders([
-        'User-Agent' => 'MonApplication/1.0 (contact@monsite.fr)',
-    ])->get('https://fr.wikipedia.org/w/api.php', [
-        'action' => 'query',
-        'titles' => $titles,
-        'prop' => 'pageimages',
-        'piprop' => 'original',
-        'format' => 'json',
-    ]);
+$response = Http::withHeaders([
+'User-Agent' => 'MonApplication/1.0 (contact@monsite.fr)',
+])->get('https://fr.wikipedia.org/w/api.php', [
+'action' => 'query',
+'titles' => $titles,
+'prop' => 'pageimages',
+'piprop' => 'original',
+'format' => 'json',
+]);
 
-    $pages = $response->json('query.pages', []);
+$pages = $response->json('query.pages', []);
 
-    $images = [];
+$images = [];
 
-    foreach ($pages as $page) {
-        if (isset($page['title'])) {
-            $images[$page['title']] = data_get($page, 'original.source');
-        }
-    }
+foreach ($pages as $page) {
+if (isset($page['title'])) {
+$images[$page['title']] = data_get($page, 'original.source');
+}
+}
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +66,7 @@
         <h1>Votre potentiel d’installation 🌱</h1>
 
         <p class="lead">
-          Analyse intelligente du marché local pour maximiser vos chances de réussite.
+          Analyse du marché local pour maximiser vos chances de réussite.
         </p>
 
         <div class="feature-list">
@@ -117,17 +117,23 @@
       </aside>
     </section>
     <section>
-      <h2>1 - Le bassin de population et sa situation économique</h2>
+      <h2>1 - Le bassin de population et sa situation économique <span id="pop_info" style="cursor: pointer">ℹ️</span>
+      </h2>
+      <dialog id="pop_info_content"
+        style="display:none; width: screen; height: screen; background-color: rgb(255, 255, 255); z-index: 9999; border-radius:12px; border:1px solid black">
+        <h2>Informations sur les fiches communes</h2>
+        <img src="/img/explain_commune.excalidraw.png" alt="">
+      </dialog>
       <p>La population située à 10 minutes en voiture de votre emplacement s'élève à {{
         $datas->scoring->population_totale }} personnes.</p>
       <div class="population">
         @foreach ($datas->cities as $key => $city)
         <div class="card-city" style="@if($city->code_insee == $code_insee) border:3px solid var(--accent) @endif">
           <h3>{{ $city->name }}</h3>
-          @php  
-            $url = $images[$city->name] ?? null;
+          @php
+          $url = $images[$city->name] ?? null;
           @endphp
-        
+
           <img src="{{ $url }}" alt="" style="width:100%;">
           <div>
             @if(count($city->nearby_organic_vegetable_farms))
@@ -474,13 +480,30 @@
       </div>
       <div class="chart-container">
         <h2>Données climatiques</h2>
-        <button onclick="chart.resetZoom()">Reset zoom</button>
+        <button onclick="chart.resetZoom()">Dézoomer</button>
         <canvas id="climateChart"></canvas>
       </div>
     </section>
-
+    <div>
+      <footer>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>© <strong>Installation Scoring</strong> — Tous droits réservés</div>
+          {{-- <div style="color:var(--muted)">Contact • Confidentialité • Mentions légales</div> --}}
+        </div>
+      </footer>
+    </div>
   </div>
+
   <script>
+    const pop_info = document.getElementById('pop_info');
+    pop_info.addEventListener('mouseenter', function () {
+      const pop_info_content = document.getElementById('pop_info_content');
+      pop_info_content.style.display = 'block';
+    });
+    pop_info.addEventListener('mouseout', function () {
+      const pop_info_content = document.getElementById('pop_info_content');
+      pop_info_content.style.display = 'none';
+    });
     async function loadWeather() {
 
         const data = @json($weather_datas)

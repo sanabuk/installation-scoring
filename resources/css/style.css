@@ -28,7 +28,7 @@ nav{display:flex;gap:18px;align-items:center}
 /* Hero */
 .hero{display:grid;grid-template-columns:1fr 440px;gap:32px;align-items:center;margin-top:24px}
 .hero-card{background:var(--panel);border-radius:var(--radius);padding:36px;box-shadow:0 8px 24px rgba(23,40,12,0.06)}
-.eyebrow{display:inline-block;background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#0b2b0b;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
+.eyebrow{display:inline-block;background:linear-gradient(90deg,var(--accent-2),var(--accent));color:#fdfffd;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
 h1{font-size:40px;line-height:1.03;margin:18px 0;color:var(--soil)}
 p.lead{font-size:18px;color:var(--muted);margin:10px 0 18px}
 
