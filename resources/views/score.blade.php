@@ -103,16 +103,26 @@ $images[$page['title']] = data_get($page, 'original.source');
 
       <!-- SCORE -->
       <aside class="card-aside">
-        <h3>Score global</h3>
+        <h3>Scores climatiques</h3>
 
         <div style="font-size:48px;font-weight:900;color:var(--accent)">
           {{ $datas->weather->globalScore ?? '--' }}
         </div>
 
-        <div style="font-size:14px;color:var(--muted)">Score d’opportunité</div>
+        <div style="font-size:14px;color:var(--muted)">Score climatique</div>
 
         <p style="color:var(--muted)">
           {{ $datas->weather->globalCommentary }}
+        </p>
+
+        <div style="font-size:48px;font-weight:900;color:var(--accent)">
+          {{ $datas->weather->confidenceScore ?? '--' }}
+        </div>
+
+        <div style="font-size:14px;color:var(--muted)">Risque climatique</div>
+
+        <p style="color:var(--muted)">
+          ⚠️ {{ $datas->weather->globalConfidence }}
         </p>
       </aside>
     </section>
@@ -124,7 +134,7 @@ $images[$page['title']] = data_get($page, 'original.source');
         <h2>Informations sur les fiches communes</h2>
         <img src="/img/explain_commune.excalidraw.png" alt="">
       </dialog>
-      <p>La population située à 10 minutes en voiture de votre emplacement s'élève à {{
+      <p>La population totale située à 10 minutes en voiture de votre emplacement s'élève à {{
         $datas->scoring->population_totale }} personnes.</p>
       <div class="population">
         @foreach ($datas->cities as $key => $city)
@@ -470,19 +480,97 @@ $images[$page['title']] = data_get($page, 'original.source');
       <p>
         {!! nl2br(e($datas->weather->commentaries)) !!}
       </p>
-      <div>
+      {{-- <div>
         <div style="font-size: large; font-weight:600">
           <div>{{ $datas->weather->globalCommentary }}({{ $datas->weather->globalScore }}/100)</div>
         </div>
         <div style="font-size: large; font-weight:600">
           <div>{{ $datas->weather->globalConfidence }}({{ $datas->weather->confidenceScore }}/100)</div>
         </div>
-      </div>
+      </div> --}}
       <div class="chart-container">
         <h2>Données climatiques</h2>
         <button onclick="chart.resetZoom()">Dézoomer</button>
         <canvas id="climateChart"></canvas>
       </div>
+    </section>
+    <section>
+      <h2>3 - Annuaire </h2>
+      @foreach ($datas->cities as $key => $city)
+        @if(count($city->nearby_organic_vegetable_farms) || count($city->amap) || count($city->marketplaces))
+        <h3>{{ $city->name }}</h3>
+          @if(count($city->nearby_organic_vegetable_farms))
+            <h4>Liste des fermes</h4>
+            <div class="table-container">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Adresse</th>
+                    <th>Téléphone</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($city->nearby_organic_vegetable_farms[0] as $farm)
+                    <tr>
+                      <td>{{ $farm->name_annuaire ?? $farm->name }}</td>
+                      <td>🏠 {{ $farm->address1 }} - {{ $farm->zipcode1 }} {{ $farm->city1 }}</td>
+                      <td>☎️ {{ $farm->phone1 ?? $farm->phone2 }}</td>
+                    </tr>
+                  @endforeach 
+                </tbody>              
+              </table>
+            </div>
+            
+          @endif
+          @if(count($city->amap))
+            <h4>Liste des amaps</h4> 
+            <div class="table-container">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Mail</th>
+                    <th>Infos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($city->amap[0] as $amap)
+                    <tr>
+                      <td>{{ $amap->name }}</td>
+                      <td>📧 {{ $amap->mail ?? '' }}</td>
+                      <td>ℹ️ {{ $amap->infos ?? '' }}</td>
+                    </tr>
+                  @endforeach 
+                </tbody>              
+              </table>
+            </div>
+            
+          @endif
+          @if(count($city->marketplaces))
+            <h4>Liste des marchés</h4>
+            <div class="table-container">
+              <table class="modern-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Horaires</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach ($city->marketplaces[0] as $marketplace)
+                    <tr>
+                      <td>{{ $marketplace->name }}</td>
+                      <td>ℹ️ {{ $marketplace->horaires }}</td>
+                    </tr>
+                  @endforeach
+                </tbody> 
+              </table>
+            </div> 
+          @endif
+        <br style="page-break-after: always;" />
+        @endif
+      @endforeach
     </section>
     <div>
       <footer>
