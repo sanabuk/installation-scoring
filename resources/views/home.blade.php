@@ -120,10 +120,10 @@
           <p>Scoring d'implantation, comparaison de la concurrence, estimation de la demande et cartographie des risques.</p>
         </div>
 
-        <div class="step">
+        {{-- <div class="step">
           <strong>3. Recommandations</strong>
           <p>Priorisation des parcelles, scénarios d'implantation et checklists opérationnelles pour démarrer rapidement.</p>
-        </div>
+        </div> --}}
       </div>
     </section>
 
